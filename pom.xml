@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>in.ac.iitk.cse</groupId>
+  <artifactId>putwb</artifactId>
+  <version>1.1</version>
+  <name>PUTWorkbench</name>
+  <description>A Privacy Utility Trade-off Analysis Tool</description>
+  <properties>
+  	<maven.compiler.source>1.8</maven.compiler.source>
+  	<maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  <dependencies>
+  	<dependency>
+  		<groupId>nz.ac.waikato.cms.weka</groupId>
+  		<artifactId>weka-stable</artifactId>
+  		<version>3.8.1</version>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<version>2.3</version>
+			<executions>
+				<execution>
+					<!-- Build the CLI version -->
+					<phase>package</phase>
+					<id>build-cli</id>
+					<goals>
+						<goal>shade</goal>
+					</goals>
+					<configuration>
+						<filters>
+							<!-- Don't include the UI code -->
+							<filter>
+								<artifact>*:*</artifact>
+								<excludes>in/ac/iitk/cse/putwb/ui/**</excludes>
+							</filter>
+						</filters>
+						<finalName>putwb-cli-${project.version}</finalName>
+						<transformers>
+							<!-- Don't include images -->
+							<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+								<resource>.png</resource>
+							</transformer>
+							<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<mainClass>in.ac.iitk.cse.putwb.experiment.PUTExperiment</mainClass>
+							</transformer>
+						</transformers>
+					</configuration>
+				</execution>
+				<execution>
+					<!-- Build the UI version -->
+					<phase>package</phase>
+					<id>build-ui</id>
+					<goals>
+						<goal>shade</goal>
+					</goals>
+					<configuration>
+					<finalName>putwb-ui-${project.version}</finalName>
+						<transformers>
+							<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<mainClass>in.ac.iitk.cse.putwb.ui.PUTWb</mainClass>
+							</transformer>
+						</transformers>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+  	</plugins>
+  </build>
+</project>
