@@ -4,6 +4,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,34 +25,26 @@ import weka.core.Instances;
 public class SetExpenseAction extends Action {
 	
 	/**
-	 * A slider to select vertical expense
+	 * This utility method calculates the value of the function <i>C(n, k)</i> or <i>"n choose k"</i> for given values of <i>n</i> and <i>k</i>
+	 * @param n The value of <i>n</i>
+	 * @param k The value of <i>k</i>
+	 * @return <i>C(n, k)</i> for given <i>n</i> and <i>k</i>
 	 */
-	private FloatingSliderPanel verticalExpenseSlider;
-	
-	/**
-	 * A slider to select horizontal expense
-	 */
-	private FloatingSliderPanel horizontalExpenseSlider;
-	
-	/**
-	 * A link to the current privacy settings action; used to fetch the current value of PUT number
-	 */
-	private SelectPrivacySettingsAction privacyAction;
-	
-	/**
-	 * The number of attributes in the dataset (minus the class attribute)
-	 */
-	private int numOfAttributes;
-	
-	/**
-	 * The number of data instances in the dataset
-	 */
-	private long numberOfRows;
-	
-	/**
-	 * The default value of vertical expense
-	 */
-	private float DEFAULT_VERTICAL_EXPENSE = 1f;
+	private static BigInteger getNcKValue(int n, int k) {
+		if(k == 0)
+			return BigInteger.ZERO;
+		// Calculate two big integers: n * (n-1) * ... * (n-k+1) and k * (k-1) * ... * 2 * 1
+		BigInteger numerator = new BigInteger("" + n);
+		int temp = n;
+		while(--temp >= (n-k+1))
+			numerator = numerator.multiply(new BigInteger("" + temp));
+		BigInteger denominator = new BigInteger("" + k);
+		temp = k;
+		while(--temp > 1)
+			denominator = denominator.multiply(new BigInteger("" + temp));
+		// Return numerator / denominator
+		return numerator.divide(denominator);
+	}
 	
 	/**
 	 * The default value of horizontal expense
@@ -59,9 +52,39 @@ public class SetExpenseAction extends Action {
 	private float DEFAULT_HORIZONTAL_EXPENSE = 1f;
 	
 	/**
+	 * The default value of vertical expense
+	 */
+	private float DEFAULT_VERTICAL_EXPENSE = 1f;
+	
+	/**
+	 * A slider to select horizontal expense
+	 */
+	private FloatingSliderPanel horizontalExpenseSlider;
+	
+	/**
+	 * The number of data instances in the dataset
+	 */
+	private long numberOfRows;
+	
+	/**
+	 * The number of attributes in the dataset (minus the class attribute)
+	 */
+	private int numOfAttributes;
+	
+	/**
+	 * A link to the current privacy settings action; used to fetch the current value of PUT number
+	 */
+	private SelectPrivacySettingsAction privacyAction;
+	
+	/**
 	 * The current value of vertical expense
 	 */
 	private JPanel verticalExpensePanel;
+	
+	/**
+	 * A slider to select vertical expense
+	 */
+	private FloatingSliderPanel verticalExpenseSlider;
 	
 	/**
 	 * Creates an instance of expense action for the given selected dataset and a link to the current privacy settings action
@@ -173,21 +196,38 @@ public class SetExpenseAction extends Action {
 	}
 	
 	/**
-	 * Set the information label for vertical expense slider - the number of attribute combinations that will be tried for the selected value of vertical expense
-	 * @param currentValue The current value of vertical expense
-	 * @return a string that shows details of the number of attribute combinations that will be tried for the given vertical expense value
+	 * Returns the currently selected value of horizontal expense
+	 * @return the horizontal expense
 	 */
-	private String setVerticalExpenseInfoLabel(float currentValue) {
-		float putNumber = privacyAction.getPUTNumber();
-		BigInteger totalCombinations = getNcKValue(numOfAttributes, PUTExperiment.calculatePartitionSize(numOfAttributes, putNumber));
-		BigInteger numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + currentValue)).toBigInteger();
-		if(numberOfCombinations.compareTo(BigInteger.ZERO) == 0) {
-			JOptionPane.showMessageDialog(null, "The number of attribute combinations cannot be 0. Resetting to default !!", "Error (0 combinations)", JOptionPane.ERROR_MESSAGE);
-			verticalExpenseSlider.setCurrentValue(DEFAULT_VERTICAL_EXPENSE);
-			numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + DEFAULT_VERTICAL_EXPENSE)).toBigInteger();
+	public float getHorizontalExpense() {
+		return horizontalExpenseSlider.getCurrentValue();
+	}
+	
+	/**
+	 * Returns the currently selected value of vertical expense
+	 * @return the vertical expense
+	 */
+	public float getVerticalExpense() {
+		return verticalExpenseSlider.getCurrentValue();
+	}
+	
+	/**
+	 * Resets the panel to reflect the correct current state
+	 */
+	public void resetVerticalExpenseInfo() {
+		verticalExpenseSlider.setCurrentValue(verticalExpenseSlider.getCurrentValue());
+	}
+	
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		if(preferences != null) {
+			String vExpenseStr = preferences.get(PUTExperiment.V_EXPENSE_SWITCH);
+			if(vExpenseStr != null)
+				verticalExpenseSlider.setCurrentValue(Float.parseFloat(vExpenseStr.trim()));
+			String hExpenseStr = preferences.get(PUTExperiment.H_EXPENSE_SWITCH);
+			if(hExpenseStr != null)
+				horizontalExpenseSlider.setCurrentValue(Float.parseFloat(hExpenseStr.trim()));
 		}
-		String text = "Select " + numberOfCombinations + " attribute combinations out of " + totalCombinations + " (without considering any Privacy Exceptions)";
-		return "<html><center><font size='4' color='#2d0c08'>" + text + "</font></center></html>";
 	}
 	
 	/**
@@ -212,50 +252,23 @@ public class SetExpenseAction extends Action {
 		
 		revalidate();
 	}
-	
+
 	/**
-	 * Resets the panel to reflect the correct current state
+	 * Set the information label for vertical expense slider - the number of attribute combinations that will be tried for the selected value of vertical expense
+	 * @param currentValue The current value of vertical expense
+	 * @return a string that shows details of the number of attribute combinations that will be tried for the given vertical expense value
 	 */
-	public void reset() {
-		setupVExpenseSlider();
-	}
-	
-	/**
-	 * Returns the currently selected value of vertical expense
-	 * @return the vertical expense
-	 */
-	public float getVerticalExpense() {
-		return verticalExpenseSlider.getCurrentValue();
-	}
-	
-	/**
-	 * Returns the currently selected value of horizontal expense
-	 * @return the horizontal expense
-	 */
-	public float getHorizontalExpense() {
-		return horizontalExpenseSlider.getCurrentValue();
-	}
-	
-	/**
-	 * This utility method calculates the value of the function <i>C(n, k)</i> or <i>"n choose k"</i> for given values of <i>n</i> and <i>k</i>
-	 * @param n The value of <i>n</i>
-	 * @param k The value of <i>k</i>
-	 * @return <i>C(n, k)</i> for given <i>n</i> and <i>k</i>
-	 */
-	private static BigInteger getNcKValue(int n, int k) {
-		if(k == 0)
-			return BigInteger.ZERO;
-		// Calculate two big integers: n * (n-1) * ... * (n-k+1) and k * (k-1) * ... * 2 * 1
-		BigInteger numerator = new BigInteger("" + n);
-		int temp = n;
-		while(--temp >= (n-k+1))
-			numerator = numerator.multiply(new BigInteger("" + temp));
-		BigInteger denominator = new BigInteger("" + k);
-		temp = k;
-		while(--temp > 1)
-			denominator = denominator.multiply(new BigInteger("" + temp));
-		// Return numerator / denominator
-		return numerator.divide(denominator);
+	private String setVerticalExpenseInfoLabel(float currentValue) {
+		float putNumber = privacyAction.getPUTNumber();
+		BigInteger totalCombinations = getNcKValue(numOfAttributes, PUTExperiment.calculatePartitionSize(numOfAttributes, putNumber));
+		BigInteger numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + currentValue)).toBigInteger();
+		if(numberOfCombinations.compareTo(BigInteger.ZERO) == 0) {
+			JOptionPane.showMessageDialog(null, "The number of attribute combinations cannot be 0. Resetting to default !!", "Error (0 combinations)", JOptionPane.ERROR_MESSAGE);
+			verticalExpenseSlider.setCurrentValue(DEFAULT_VERTICAL_EXPENSE);
+			numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + DEFAULT_VERTICAL_EXPENSE)).toBigInteger();
+		}
+		String text = "Select " + numberOfCombinations + " attribute combinations out of " + totalCombinations + " (without considering any Privacy Exceptions)";
+		return "<html><center><font size='4' color='#2d0c08'>" + text + "</font></center></html>";
 	}
 
 }

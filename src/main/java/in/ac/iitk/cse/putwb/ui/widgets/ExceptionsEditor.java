@@ -122,20 +122,7 @@ public class ExceptionsEditor extends JPanel implements ActionListener {
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if(option == JOptionPane.OK_OPTION) {
 				Set<Integer> exception = as.getAllSelectedAttributes();
-				if(exception.size() > maxExceptionLength) {
-					JOptionPane.showMessageDialog(null, "The exception can contain a maximum of " + maxExceptionLength + " attribute(s)");
-					return;
-				} else if(listModel.contains(exception)) {
-					JOptionPane.showMessageDialog(null, "Exception already exists");
-					return;
-				} else {
-					Set<Integer> temp = checkSubsetException(exception);
-					if(temp != null) {
-						JOptionPane.showMessageDialog(null, "Exception " + exception.toString() + " is a subset of exception " + temp.toString() + " which already exists");
-						return;
-					}
-				}
-				listModel.addElement(exception);
+				addException(exception);
 			}
 		} else if(e.getSource().equals(removeButton)) {
 			int selectedIndex = list.getSelectedIndex();
@@ -147,6 +134,27 @@ public class ExceptionsEditor extends JPanel implements ActionListener {
 		}
 	}
 
+	/**
+	 * Adds a given exception to the editor
+	 * @param exception A {@link Set} of integers representing the exception
+	 */
+	public void addException(Set<Integer> exception) {
+		if(exception.size() > maxExceptionLength) {
+			JOptionPane.showMessageDialog(null, "The exception can contain a maximum of " + maxExceptionLength + " attribute(s)");
+			return;
+		} else if(listModel.contains(exception)) {
+			JOptionPane.showMessageDialog(null, "Exception already exists");
+			return;
+		} else {
+			Set<Integer> temp = checkSubsetException(exception);
+			if(temp != null) {
+				JOptionPane.showMessageDialog(null, "Exception " + exception.toString() + " is a subset of exception " + temp.toString() + " which already exists");
+				return;
+			}
+		}
+		listModel.addElement(exception);
+	}
+	
 	/**
 	 * Checks if an exception is already covered by an existing exception
 	 * @param exceptionsToCheck The exception to check

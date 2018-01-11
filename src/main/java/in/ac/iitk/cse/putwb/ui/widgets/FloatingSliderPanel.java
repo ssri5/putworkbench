@@ -134,6 +134,7 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 		if(value < min || value > max)
 			throw new IllegalArgumentException("The value must be between " + min + " and " + max);
 		slider.setValue((int)(value*1000));
+		setValueLabelText(value);
 		slider.updateUI();
 	}
 	

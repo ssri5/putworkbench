@@ -2,6 +2,7 @@ package in.ac.iitk.cse.putwb.ui.actions;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -37,4 +38,9 @@ public abstract class Action extends JPanel {
 		pcs.removePropertyChangeListener(listener);
 	}
 
+	/**
+	 * Used for setting any initial preferences for this action
+	 * @param preferences A {@link Map} of preference to value
+	 */
+	public abstract void setInitialPreferences(Map<String, String> preferences);
 }

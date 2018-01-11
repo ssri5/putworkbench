@@ -9,15 +9,25 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
 import in.ac.iitk.cse.putwb.io.DatasetLoader;
+import in.ac.iitk.cse.putwb.ui.ArchiveManager;
 import in.ac.iitk.cse.putwb.ui.IconCreator;
 import weka.core.Instances;
 
@@ -32,7 +42,12 @@ public class UploadFileAction extends Action {
 	/**
 	 * The constant for "dataset loaded/reset" property
 	 */
-	public static String LOADED_DATASET_PROPERTY = "UploadFileAction - loaded dataset";
+	public static final String LOADED_DATASET_PROPERTY = "UploadFileAction - loaded dataset";
+	
+	/**
+	 * The constant for "experiment loaded/rest" property
+	 */
+	public static final String LOADED_EXPERIMENT_PROPERTY = "UploadFileAction - loaded experiment";
 	
 	/**
 	 * Holds the selected dataset
@@ -43,6 +58,11 @@ public class UploadFileAction extends Action {
 	 * Holds the preference - whether to delete instance with missing values or not
 	 */
 	private boolean deleteMissingValues = false;
+
+	/**
+	 * The widget to take duplicate rows preferences
+	 */
+	private JCheckBox duplicateInstancesPreference;
 	
 	/**
 	 * A label to show the full file path of currently selected dataset
@@ -53,6 +73,21 @@ public class UploadFileAction extends Action {
 	 * Holds the preference - whether to ignore duplicate instances or not
 	 */
 	private boolean ignoreDuplicateInstances = true;
+	
+	/**
+	 * The widget to take missing value preferences
+	 */
+	private JCheckBox missingValuePreference;
+
+	/**
+	 * Points to the currently selected preferences for the last experiment that successfully completed stored in a file, if any
+	 */
+	private File preferencesFile = null;
+	
+	/**
+	 * Points to the loaded results file, if there is any
+	 */
+	private File resultsFile;
 	
 	/**
 	 * The panel that contain preferences related to data sanitization
@@ -70,21 +105,22 @@ public class UploadFileAction extends Action {
 	public UploadFileAction() {
 		super();
 		selectedFile = null;
+		resultsFile = null;
 		dataset = null;
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[]{1.0};
+		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 1.0};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.5, 0.5};
 		setLayout(gridBagLayout);
 		
-		JLabel uploadIconLabel = new JLabel(IconCreator.getIcon(IconCreator.UPLOAD_ICON_FILE));
-		uploadIconLabel.setOpaque(false);
-		GridBagConstraints gbc_uploadIconLabel = new GridBagConstraints();
-		gbc_uploadIconLabel.insets = new Insets(0, 0, 5, 0);
-		gbc_uploadIconLabel.gridx = 0;
-		gbc_uploadIconLabel.gridy = 0;
-		uploadIconLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		add(uploadIconLabel, gbc_uploadIconLabel);
-		uploadIconLabel.addMouseListener(new MouseAdapter() {
+		JLabel uploadDatasetIconLabel = new JLabel(IconCreator.getIcon(IconCreator.UPLOAD_DATASET_ICON_FILE));
+		uploadDatasetIconLabel.setOpaque(false);
+		GridBagConstraints gbc_uploadDatasetIconLabel = new GridBagConstraints();
+		gbc_uploadDatasetIconLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_uploadDatasetIconLabel.gridx = 0;
+		gbc_uploadDatasetIconLabel.gridy = 0;
+		uploadDatasetIconLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		add(uploadDatasetIconLabel, gbc_uploadDatasetIconLabel);
+		uploadDatasetIconLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				File startingDir = selectedFile == null ? null : selectedFile.getParentFile();
@@ -92,24 +128,69 @@ public class UploadFileAction extends Action {
 				jf.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				jf.setFileFilter(new FileNameExtensionFilter("ARFF files", "arff"));
 				int closeOption = jf.showOpenDialog(null);
-				if(closeOption == JFileChooser.APPROVE_OPTION)
-					setSelectedFile(jf.getSelectedFile());
+				if(closeOption == JFileChooser.APPROVE_OPTION) {
+					setSelectedDatasetFile(jf.getSelectedFile());
+					// Reset preferences
+					missingValuePreference.setSelected(false);
+					duplicateInstancesPreference.setSelected(true);
+				}
 			}
 		});
+		uploadDatasetIconLabel.setToolTipText("Upload a new ARFF dataset to start an experiment");
 		
-		JLabel displayTextLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Select the sample data file</font><br/><font size='3' color='#033e9e'>Data must be in Weka's Attribute-Relation File Format (arff)</font></center></html>");
-		GridBagConstraints gbc_displayTextLabel = new GridBagConstraints();
-		gbc_displayTextLabel.insets = new Insets(0, 0, 5, 0);
-		gbc_displayTextLabel.anchor = GridBagConstraints.NORTH;
-		gbc_displayTextLabel.gridx = 0;
-		gbc_displayTextLabel.gridy = 1;
-		add(displayTextLabel, gbc_displayTextLabel);
+		JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+		GridBagConstraints gbc_separator = new GridBagConstraints();
+		gbc_separator.insets = new Insets(5, 0, 5, 0);
+		gbc_separator.gridx = 1;
+		gbc_separator.gridy = 0;
+		gbc_separator.gridheight = 2;
+		gbc_separator.fill = GridBagConstraints.VERTICAL;
+		add(separator, gbc_separator);
+		
+		JLabel uploadExperimentIconLabel = new JLabel(IconCreator.getIcon(IconCreator.UPLOAD_EXPERIMENT_ICON_FILE));
+		uploadExperimentIconLabel.setOpaque(false);
+		GridBagConstraints gbc_uploadExperimentIconLabel = new GridBagConstraints();
+		gbc_uploadExperimentIconLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_uploadExperimentIconLabel.gridx = 2;
+		gbc_uploadExperimentIconLabel.gridy = 0;
+		uploadExperimentIconLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		add(uploadExperimentIconLabel, gbc_uploadExperimentIconLabel);
+		uploadExperimentIconLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				File startingDir = selectedFile == null ? null : selectedFile.getParentFile();
+				JFileChooser jf = new JFileChooser(startingDir);
+				jf.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				jf.setFileFilter(new FileNameExtensionFilter("PUT files", "put"));
+				int closeOption = jf.showOpenDialog(null);
+				if(closeOption == JFileChooser.APPROVE_OPTION)
+					setSelectedExperimentFile(jf.getSelectedFile());
+			}
+		});
+		uploadExperimentIconLabel.setToolTipText("Select a saved experiment file and load it to analyze");
+		
+		JLabel displayDatasetTextLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Select a data file for experiment</font></center></html>");
+		GridBagConstraints gbc_displayDatasetTextLabel = new GridBagConstraints();
+		gbc_displayDatasetTextLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_displayDatasetTextLabel.anchor = GridBagConstraints.NORTH;
+		gbc_displayDatasetTextLabel.gridx = 0;
+		gbc_displayDatasetTextLabel.gridy = 1;
+		add(displayDatasetTextLabel, gbc_displayDatasetTextLabel);
+		
+		JLabel displayExperimentTextLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Load an existing experiment</font></center></html>");
+		GridBagConstraints gbc_displayExperimentTextLabel = new GridBagConstraints();
+		gbc_displayExperimentTextLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_displayExperimentTextLabel.anchor = GridBagConstraints.NORTH;
+		gbc_displayExperimentTextLabel.gridx = 2;
+		gbc_displayExperimentTextLabel.gridy = 1;
+		add(displayExperimentTextLabel, gbc_displayExperimentTextLabel);
 		
 		fileLabel = new JLabel("");
 		GridBagConstraints gbc_fileLabel = new GridBagConstraints();
 		gbc_fileLabel.insets = new Insets(0, 0, 10, 0);
 		gbc_fileLabel.gridx = 0;
 		gbc_fileLabel.gridy = 2;
+		gbc_fileLabel.gridwidth = 3;
 		add(fileLabel, gbc_fileLabel);
 		
 		sanitizationOptionsPanel = new JPanel();
@@ -118,13 +199,14 @@ public class UploadFileAction extends Action {
 		gbc_sanitizationOptionsPanel.anchor = GridBagConstraints.NORTH;
 		gbc_sanitizationOptionsPanel.gridx = 0;
 		gbc_sanitizationOptionsPanel.gridy = 3;
+		gbc_sanitizationOptionsPanel.gridwidth = 3;
 		add(sanitizationOptionsPanel, gbc_sanitizationOptionsPanel);
 		GridBagLayout gbl_sanitizationOptionsPanel = new GridBagLayout();
 		gbl_sanitizationOptionsPanel.columnWeights = new double[]{0.0};
 		gbl_sanitizationOptionsPanel.rowWeights = new double[]{0.0, 0.0};
 		sanitizationOptionsPanel.setLayout(gbl_sanitizationOptionsPanel);
 		
-		JCheckBox missingValuePreference = new JCheckBox("Delete instances with missing values, instead of replacing with Mean or Mode");
+		missingValuePreference = new JCheckBox("Delete instances with missing values, instead of replacing with Mean or Mode");
 		missingValuePreference.setOpaque(false);
 		GridBagConstraints gbc_missingValuePreference = new GridBagConstraints();
 		gbc_missingValuePreference.anchor = GridBagConstraints.WEST;
@@ -141,7 +223,7 @@ public class UploadFileAction extends Action {
 			}
 		});
 		
-		JCheckBox duplicateInstancesPreference = new JCheckBox("Delete duplicate instances");
+		duplicateInstancesPreference = new JCheckBox("Delete duplicate instances");
 		duplicateInstancesPreference.setSelected(true);
 		duplicateInstancesPreference.setOpaque(false);
 		GridBagConstraints gbc_duplicateInstancesPreference = new GridBagConstraints();
@@ -159,7 +241,7 @@ public class UploadFileAction extends Action {
 		});
 		sanitizationOptionsPanel.setVisible(false);
 	}
-
+	
 	/**
 	 * Attempts to load the selected dataset, with set preferences
 	 */
@@ -170,6 +252,22 @@ public class UploadFileAction extends Action {
 			JOptionPane.showMessageDialog(null, "Problems in loading dataset", "Loading failed", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Returns the preferences file for the last experiment that successfully completed
+	 * @return The preferences file
+	 */
+	public File getPreferencesFile() {
+		return preferencesFile;
+	}
+	
+	/**
+	 * Returns the loaded experiment's result file, if any
+	 * @return a {@link File} object pointing to the result file of the loaded experiment, or <code>null</code> otherwise 
+	 */
+	public File getResultsFile() {
+		return resultsFile;
 	}
 
 	/**
@@ -206,24 +304,93 @@ public class UploadFileAction extends Action {
 		if(dataset == null)
 			JOptionPane.showMessageDialog(null, "Problems in loading dataset", "Loading failed", JOptionPane.ERROR_MESSAGE);
 		if(selectedFile != null)
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source Loaded</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getAbsolutePath() + "</font></center></html>");
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source Loaded</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getName() + "</font></center></html>");
+	}
+	
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		// Do nothing
 	}
 	
 	/**
 	 * Attempts to set a new dataset file; if successful, proceeds to set the new value of the dataset
-	 * @param selectedFile The selected dataset file
+	 * @param selectedDatasetFile The selected dataset file
 	 */
-	private void setSelectedFile(File selectedFile) {
-		if(selectedFile != null && selectedFile.exists()) {
-			this.selectedFile = selectedFile;
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Selected source</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getAbsolutePath() + "</font></center></html>");
+	private void setSelectedDatasetFile(File selectedDatasetFile) {
+		if(selectedDatasetFile != null && selectedDatasetFile.exists()) {
+			this.selectedFile = selectedDatasetFile;
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Selected source</font></b><br/><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
 			sanitizationOptionsPanel.setVisible(true);
 			attemptDatasetLoad();
 		}
-		else if(selectedFile == null)
+		else if(selectedDatasetFile == null)
 			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Select a Data source</font></b></center></html>");
 		else
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source file not found</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getAbsolutePath() + "</font></center></html>");
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source file not found</font></b><br/><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
+	}
+
+	/**
+	 * Attempts to load an existing experiment; if successful, proceeds to set the new value of the dataset and sets initiates setting other preferences
+	 * @param selectedExperimentFile The experiment file to load
+	 */
+	private void setSelectedExperimentFile(File selectedExperimentFile) {
+		if(selectedExperimentFile != null && selectedExperimentFile.exists()) {
+			if(selectedExperimentFile.getName().toLowerCase().endsWith(".put")) {
+				File tempDir = null;
+				try {
+					tempDir = Files.createTempDirectory("put" + System.nanoTime()).toFile();
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(null, "Problem in creating temporary directory. Please check if you have sufficient disk space.", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+				if(ArchiveManager.extractCompressedFileToDirectory(tempDir, selectedExperimentFile)) {
+					File[] list = tempDir.listFiles();
+					File dataFile = null, csvFile = null, prefFile = null;
+					for(File file : list) {
+						String fileName = file.getName().toLowerCase();
+						if(fileName.endsWith(".arff"))
+							dataFile = file;
+						else if(fileName.equals("results.csv"))
+							csvFile = file;
+						else if(fileName.equals("prefs.txt"))
+							prefFile = file;
+					}
+					if(dataFile == null || csvFile == null || prefFile == null) {
+						JOptionPane.showMessageDialog(null, "Illegal experiment file", "Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					setSelectedDatasetFile(dataFile);
+					Map<String, String> map = new HashMap<String, String>();
+					try {
+						Scanner sc = new Scanner(prefFile);
+						String line = null;
+						while(sc.hasNextLine()) {
+							line = sc.nextLine();
+							String[] tokens = line.trim().split(" ", 2);
+							if(tokens.length == 2)
+								map.put(tokens[0], tokens[1]);
+						}
+						sc.close();
+						this.resultsFile = csvFile;
+						this.preferencesFile = prefFile;
+						String missingValPref = map.get(PUTExperiment.MISSING_VALUE_SWITCH);
+						if(missingValPref != null) {
+							deleteMissingValues = missingValPref.trim().equals("D") ? true : false;
+							missingValuePreference.setSelected(deleteMissingValues);
+						}
+						String duplicateValPref = map.get(PUTExperiment.DUPLICATE_ROWS_SWITCH);
+						if(duplicateValPref != null) {
+							ignoreDuplicateInstances = duplicateValPref.trim().equals("Y") ? true : false;
+							duplicateInstancesPreference.setSelected(ignoreDuplicateInstances);
+						}
+						attemptDatasetLoad();
+						pcs.firePropertyChange(LOADED_EXPERIMENT_PROPERTY, null, map);
+					} catch (FileNotFoundException e) {
+						JOptionPane.showMessageDialog(null, "Problem in reading experiment data. Unable to load experiment.", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			} else
+				JOptionPane.showMessageDialog(null, "Please provide a valid experiment file", "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 }

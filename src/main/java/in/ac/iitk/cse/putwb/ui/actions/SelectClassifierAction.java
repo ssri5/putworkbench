@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.BorderFactory;
@@ -22,6 +23,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import in.ac.iitk.cse.putwb.classify.DataClassifier;
+import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
 import in.ac.iitk.cse.putwb.ui.IconCreator;
 import in.ac.iitk.cse.putwb.ui.widgets.RoundedLineBorder;
 import weka.classifiers.AbstractClassifier;
@@ -57,7 +59,7 @@ public class SelectClassifierAction extends Action implements ActionListener {
 	/**
 	 * The textbox for taking any custom classifier options 
 	 */
-	private JTextField cutomOptionsTextbox;
+	private JTextField customOptionsTextbox;
 
 	/**
 	 * Creates a new Classifier Selection action
@@ -141,14 +143,14 @@ public class SelectClassifierAction extends Action implements ActionListener {
 		gbc_infoLabel2.gridy = 2;
 		classifierPanel.add(infoLabel2, gbc_infoLabel2);
 
-		cutomOptionsTextbox = new JTextField();
+		customOptionsTextbox = new JTextField();
 		GridBagConstraints gbc_cutomOptionsTextbox = new GridBagConstraints();
 		gbc_cutomOptionsTextbox.insets = new Insets(0, 5, 5, 0);
 		gbc_cutomOptionsTextbox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_cutomOptionsTextbox.anchor = GridBagConstraints.NORTHWEST;
 		gbc_cutomOptionsTextbox.gridx = 1;
 		gbc_cutomOptionsTextbox.gridy = 2;
-		classifierPanel.add(cutomOptionsTextbox, gbc_cutomOptionsTextbox);
+		classifierPanel.add(customOptionsTextbox, gbc_cutomOptionsTextbox);
 
 		setDocumentationText();
 	}
@@ -171,7 +173,7 @@ public class SelectClassifierAction extends Action implements ActionListener {
 	 * @return The classifier options (or an empty string), enclosed between parentheses 
 	 */
 	public String getCustomOptions() {
-		return "{" + cutomOptionsTextbox.getText() + "}";
+		return "{" + customOptionsTextbox.getText() + "}";
 	}
 	
 	/**
@@ -216,5 +218,19 @@ public class SelectClassifierAction extends Action implements ActionListener {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		if(preferences != null) {
+			String classifier = preferences.get(PUTExperiment.CLASSIFIER_SWITCH);
+			if(classifier != null) {
+				classifierDropdown.setSelectedItem(classifier);
+				setDocumentationText();
+			}
+			String classifierOptions = preferences.get(PUTExperiment.CLASSIFIER_OPTIONS_SWITCH);
+			if(classifierOptions != null)
+				customOptionsTextbox.setText(classifierOptions.substring(1, classifierOptions.length()-1));
+		}
 	}
 }

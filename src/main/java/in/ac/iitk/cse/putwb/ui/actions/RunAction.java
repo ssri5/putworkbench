@@ -8,6 +8,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -28,7 +31,7 @@ import in.ac.iitk.cse.putwb.ui.widgets.RunningStateDialog;
  *
  */
 @SuppressWarnings("serial")
-public class RunAction extends Action implements ActionListener {
+public class RunAction extends Action implements ActionListener { 
 	
 	/**
 	 * The constant for "Tab Changed Request" property
@@ -86,6 +89,11 @@ public class RunAction extends Action implements ActionListener {
 	private JTextField kTextField;
 	
 	/**
+	 * The file containing the preferences for the experiment just after completion
+	 */
+	private File preferencesFile = null;
+	
+	/**
 	 * The label to show the currently added privacy exceptions
 	 */
 	private JLabel privacyExceptionsLabel;
@@ -109,7 +117,7 @@ public class RunAction extends Action implements ActionListener {
 	 * The label to show the currently added utility exceptions
 	 */
 	private JLabel utilityExceptionsLabel;
-	
+
 	/**
 	 * The label to show the currently selected value of vertical expense
 	 */
@@ -467,17 +475,21 @@ public class RunAction extends Action implements ActionListener {
 		
 		setSummary();
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String kText = kTextField.getText();
 		int k = -1;
-		
+		String temporaryFile = null;
 		try {
 			k = Integer.parseInt(kText);
+			temporaryFile = File.createTempFile("put", "" + System.currentTimeMillis()).getAbsolutePath();
 		} catch(NumberFormatException | NullPointerException ex) {
 			JOptionPane.showMessageDialog(null, "Please provide a valid value of \"k\" for cross validation", "Error", JOptionPane.ERROR_MESSAGE);
 			kTextField.setText("5");
+			return;
+		} catch(IOException ex) {
+			JOptionPane.showMessageDialog(null, "Problem in creating temporary file. Please check if you have sufficient disk space.", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		String dataset = datasetInfo.getSelectedFile().getAbsolutePath();
@@ -492,7 +504,7 @@ public class RunAction extends Action implements ActionListener {
 		float hExpense = expenseInfo.getHorizontalExpense();
 		String classifier = classifierInfo.getClassifier();
 		String classifierOptions = classifierInfo.getCustomOptions();
-		String[] params = new String[22];
+		String[] params = new String[24];
 		
 		params[0] = PUTExperiment.DATA_FILE_SWITCH;
 		params[1] = dataset;
@@ -527,6 +539,9 @@ public class RunAction extends Action implements ActionListener {
 		params[20] = PUTExperiment.DUPLICATE_ROWS_SWITCH;
 		params[21] = "" + duplicateInstancesPreference;
 		
+		params[22] = PUTExperiment.OUTPUT_FILE_SWITCH;
+		params[23] = temporaryFile;
+		
 		PUTExperiment experiment = PUTExperiment.createExperiment(params);
 		
 		pcs.firePropertyChange(TASKS_RUNNING_PROPERTY, null, true);
@@ -537,10 +552,35 @@ public class RunAction extends Action implements ActionListener {
 		
 		if(dialog.isTasksCompleted()) {
 			resultFile = experiment.getResultFile();
+			/*
+			 * Write preferences
+			 */
+			try {
+				File tempFile = File.createTempFile("putPref", "" + System.nanoTime());
+				PrintWriter pw = new PrintWriter(tempFile);
+				for(int i = 0; i < params.length; i+=2) {
+					if(params[i] == PUTExperiment.DATA_FILE_SWITCH || params[i] == PUTExperiment.OUTPUT_FILE_SWITCH)
+						continue;
+					pw.println(params[i] + " " + params[i+1]);
+				}
+				pw.flush();
+				pw.close();
+				preferencesFile = tempFile;
+			} catch (IOException e1) {
+				JOptionPane.showMessageDialog(null, "Problem in creating/writing temporary file. You may not be able to save this experiment.", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 			pcs.firePropertyChange(TASKS_COMPLETED_PROPERTY, null, true);
 		}
 		else
 			pcs.firePropertyChange(TASKS_COMPLETED_PROPERTY, null, false);
+	}
+
+	/**
+	 * Return the preferences for last successfully completed experiment
+	 * @return The preferences file
+	 */
+	public File getPreferencesFile() {
+		return preferencesFile;
 	}
 	
 	/**
@@ -549,6 +589,15 @@ public class RunAction extends Action implements ActionListener {
 	 */
 	public File getResultFile() {
 		return resultFile;
+	}
+
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		if(preferences != null) {
+			String kCrossValidationPreference = preferences.get(PUTExperiment.K_CROSS_SWITCH);
+			if(kCrossValidationPreference != null)
+				kTextField.setText(kCrossValidationPreference);
+		}
 	}
 
 	/**

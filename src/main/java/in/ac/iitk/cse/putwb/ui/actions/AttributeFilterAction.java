@@ -8,6 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -33,77 +34,82 @@ import in.ac.iitk.cse.putwb.ui.widgets.RoundedLineBorder;
  */
 @SuppressWarnings("serial")
 public class AttributeFilterAction extends Action implements ActionListener {
+
+	/**
+	 * The preference constant for setting filtered attributes
+	 */
+	public static final String FILTERED_ATTRIBUTES_LIST_PREFERENCE = "Filter_Attributes";
 	
 	/**
 	 * The constant for "Filters Changed" property
 	 */
 	public static final String FILTERS_CHANGED = "AttributeFilterAction - filters changed";
-	
+
 	/**
 	 * The constant for "Attributes Masked" property
 	 */
 	public static short HAVING_TO_NOT_HAVING = 0;
-	
+
 	/**
 	 * The constant for "Attributes in Masked and Unmasked categories switched" property
 	 */
 	public static short INVERSION = 2;
-	
+
 	/**
 	 * The constant for "Attributes Unmasked" property
 	 */
 	public static short NOT_HAVING_TO_HAVING = 1;
-	
+
 	/**
 	 * The text color in the list showing unmasked attributes
 	 */
 	private Color HAVING_TEXT_COLOR = new Color(45, 130, 2);
-	
+
 	/**
 	 * The list widget containing the unmasked attributes
 	 */
 	private JList<String> havingList;
-	
+
 	/**
 	 * The button to interchange masked and unmasked sets of attributes
 	 */
 	private JButton invertButton;
-	
+
 	/**
 	 * The model for the unmasked attributes list
 	 */
 	private DefaultListModel<String> leftListModel;
-	
+
 	/**
 	 * The button that masks one or more attributes
 	 */
 	private JButton leftToRightButton;
-	
+
 	/**
 	 * The text color in the list showing masked attributes
 	 */
 	private Color NOT_HAVING_TEXT_COLOR = new Color(219, 58, 4);
-	
+
 	/**
 	 * The list widget containing the masked attributes
 	 */
 	private JList<String> notHavingList;
-	
+
 	/**
 	 * The model for the masked attributes list
 	 */
 	private DefaultListModel<String> rightListModel;
-	
+
 	/**
 	 * The button that unmasks one or more attributes
 	 */
 	private JButton rightToLeftButton;
-	
+
 	/**
 	 * The color to show any selected row(s) in either masked or unmasked attributes lists
 	 */
 	private Color SELECTED_COLOR = new Color(247, 247, 183);
-	
+
 	/**
 	 * Creates a new Attribute Filter action panel with the given set of attribute names
 	 * @param attributeNames An array of attribute names
@@ -115,7 +121,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 1.0};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0};
 		setLayout(gridBagLayout);
-		
+
 		JLabel infoLabel1 = new JLabel("<html><b><font size='4' color='#033e9e'>Results of combinations with masked attributes are filtered out</font></b></html>");
 		infoLabel1.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_infoLabel1 = new GridBagConstraints();
@@ -124,7 +130,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gbc_infoLabel1.gridx = 0;
 		gbc_infoLabel1.gridy = 0;
 		add(infoLabel1, gbc_infoLabel1);
-		
+
 		JPanel infoPanel = new JPanel();
 		infoPanel.setOpaque(false);
 		GridBagConstraints gbc_infoPanel = new GridBagConstraints();
@@ -138,7 +144,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gbl_infoPanel.columnWeights = new double[]{1.0, 1.0};
 		gbl_infoPanel.rowWeights = new double[]{1.0};
 		infoPanel.setLayout(gbl_infoPanel);
-		
+
 		JLabel infoLabel2 = new JLabel("Attributes shown");
 		infoLabel2.setForeground(HAVING_TEXT_COLOR);
 		infoLabel2.setHorizontalAlignment(SwingConstants.CENTER);
@@ -148,7 +154,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gbc_infoLabel2.gridx = 0;
 		gbc_infoLabel2.gridy = 1;
 		infoPanel.add(infoLabel2, gbc_infoLabel2);
-		
+
 		JLabel infoLabel3 = new JLabel("Attributes masked");
 		infoLabel3.setBackground(NOT_HAVING_TEXT_COLOR);
 		infoLabel3.setForeground(Color.RED);
@@ -158,7 +164,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gbc_infoLabel3.gridx = 1;
 		gbc_infoLabel3.gridy = 1;
 		infoPanel.add(infoLabel3, gbc_infoLabel3);
-		
+
 		leftListModel = new DefaultListModel<String>();
 		for(int i = 0; i < attributeNames.length; i++)
 			leftListModel.addElement((i+1) + ".  " + attributeNames[i]);
@@ -186,9 +192,9 @@ public class AttributeFilterAction extends Action implements ActionListener {
 					c.setBackground(SELECTED_COLOR);
 				return c;
 			}
-			
+
 		});
-		
+
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setOpaque(false);
 		GridBagConstraints gbc_buttonsPanel = new GridBagConstraints();
@@ -201,7 +207,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		gbl_buttonsPanel.columnWeights = new double[]{0.0};
 		gbl_buttonsPanel.rowWeights = new double[]{0.0, 0.0};
 		buttonsPanel.setLayout(gbl_buttonsPanel);
-		
+
 		leftToRightButton = new JButton(">>");
 		GridBagConstraints gbc_leftToRightButton = new GridBagConstraints();
 		gbc_leftToRightButton.insets = new Insets(0, 0, 5, 0);
@@ -210,7 +216,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		buttonsPanel.add(leftToRightButton, gbc_leftToRightButton);
 		leftToRightButton.addActionListener(this);
 		leftToRightButton.setToolTipText("Mask");
-		
+
 		rightToLeftButton = new JButton("<<");
 		GridBagConstraints gbc_rightToLeftButton = new GridBagConstraints();
 		gbc_rightToLeftButton.insets = new Insets(5, 0, 0, 0);
@@ -219,7 +225,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		buttonsPanel.add(rightToLeftButton, gbc_rightToLeftButton);
 		rightToLeftButton.addActionListener(this);
 		rightToLeftButton.setToolTipText("Unmask");
-		
+
 		rightListModel = new DefaultListModel<String>();
 		notHavingList = new JList<String>(rightListModel);
 		notHavingList.setVisibleRowCount(8);
@@ -245,9 +251,9 @@ public class AttributeFilterAction extends Action implements ActionListener {
 					c.setBackground(SELECTED_COLOR);
 				return c;
 			}
-			
+
 		});
-		
+
 		invertButton = new JButton("Invert");
 		GridBagConstraints gbc_invertButton = new GridBagConstraints();
 		gbc_invertButton.gridwidth = 3;
@@ -265,7 +271,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		JButton source = (JButton)e.getSource();
 		if(source.equals(leftToRightButton)) {
 			int[] selectedIndices = havingList.getSelectedIndices();
-			
+
 			if(selectedIndices.length == 0) {
 				JOptionPane.showMessageDialog(null, "Select one or more attributes to mask", "Select attribute(s)", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -333,7 +339,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 			pcs.firePropertyChange(FILTERS_CHANGED, null, INVERSION);
 		}
 	}
-	
+
 	/**
 	 * Compares two attributes as per the order information in the begining of the text (e.g. "1. AttributeI", "2. AttributeJ" etc.)
 	 * @param attr1
@@ -360,7 +366,7 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		}
 		return attributeList;
 	}
-	
+
 	/**
 	 * Get the set of unmasked attributes
 	 * @return A {@link Set} of attribute indices which are unmasked
@@ -374,5 +380,33 @@ public class AttributeFilterAction extends Action implements ActionListener {
 		}
 		return attributeList;
 	}
-	
+
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		if(preferences != null) {
+			String list = preferences.get(FILTERED_ATTRIBUTES_LIST_PREFERENCE);
+			if(list != null && list.trim().length() > 2) {
+				String[] attributes = list.substring(1, list.length()-1).split(",");
+				if(attributes.length > 0) {
+					int[] selectedIndices = new int[attributes.length];
+					int i = 0;
+					for(String attributeIndex : attributes)
+						selectedIndices[i++] = Integer.parseInt(attributeIndex.trim()) - 1;
+					
+					// Imitate the filtering UI action
+					havingList.setSelectedIndices(selectedIndices);
+					ActionEvent event;
+					long when;
+
+					when  = System.currentTimeMillis();
+					event = new ActionEvent(leftToRightButton, ActionEvent.ACTION_PERFORMED, null, when, 0);
+
+					for (ActionListener listener : leftToRightButton.getActionListeners()) {
+						listener.actionPerformed(event);
+					}
+				}
+			}
+		}
+	}
+
 }

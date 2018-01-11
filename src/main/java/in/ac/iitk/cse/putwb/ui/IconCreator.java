@@ -74,9 +74,14 @@ public abstract class IconCreator {
 	public static final String RUN_ICON_FILE = "Run.png";
 	
 	/**
-	 * Icon File for Uploat File Diagram
+	 * Icon File for Uploat Dataset Diagram
 	 */
-	public static final String UPLOAD_ICON_FILE = "Upload.png";
+	public static final String UPLOAD_DATASET_ICON_FILE = "UploadDataset.png";
+	
+	/**
+	 * Icon File for Uploat Experiment Diagram
+	 */
+	public static final String UPLOAD_EXPERIMENT_ICON_FILE = "UploadExperiment.png";
 	
 	/**
 	 * Returns an Icon in object form, for the given file

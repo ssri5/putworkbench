@@ -10,6 +10,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -195,7 +196,7 @@ public class PUTWb implements PropertyChangeListener {
 			if(action instanceof RunAction) {
 				((RunAction)action).setSummary();
 			} else if(action instanceof SetExpenseAction) {
-				((SetExpenseAction)action).reset();
+				((SetExpenseAction)action).resetVerticalExpenseInfo();
 			}
 			currentTab = navigationRequest;
 			statusPanel.selectStatusButton(tabName.toLowerCase());
@@ -351,6 +352,7 @@ public class PUTWb implements PropertyChangeListener {
 				actionsPanel.getForwardButton().setDisabled(false);
 				actionsPanel.getFastForwardButton().setDisabled(false);
 			}
+			enableAnalysis = false;
 		} else if(evt.getPropertyName().equals(StatusPanel.TAB_CHANGED)) {
 			short tab = ((Integer)evt.getNewValue()).shortValue();
 			attemptNavigation(tab);
@@ -367,17 +369,41 @@ public class PUTWb implements PropertyChangeListener {
 				for(int i = 0; i < attributeNames.length; i++)
 					attributeNames[i] = dataset.attribute(i).name();
 				List<String> allClasses = Dataset.getAllClassesForDataset(dataset);
-				AnalyzeAction action = new AnalyzeAction(runAction.getResultFile(), attributeNames, allClasses);
+				AnalyzeAction action = new AnalyzeAction(runAction.getResultFile(), attributeNames, allClasses, 
+						((UploadFileAction)actions.get(LOAD_ACTION)).getSelectedFile(), 
+						((RunAction)actions.get(RUN_ACTION)).getPreferencesFile());
 				actions.put(ANALYZE_ACTION, action);
 				enableAnalysis = true;
+				
 				statusPanel.setFinishedState();
 				actionsPanel.getForwardButton().setDisabled(false);
 				actionsPanel.getFastForwardButton().setDisabled(false);
 				attemptNavigation(ANALYZE_TAB);
 			}
+		} else if(evt.getPropertyName().equals(UploadFileAction.LOADED_EXPERIMENT_PROPERTY)) {
+			UploadFileAction uploadAction = (UploadFileAction)actions.get(LOAD_ACTION);
+			File resultFile = uploadAction.getResultsFile();
+			File prefsFile = uploadAction.getPreferencesFile();
+			String[] attributeNames = new String[dataset.numAttributes() - 1];
+			for(int i = 0; i < attributeNames.length; i++)
+				attributeNames[i] = dataset.attribute(i).name();
+			List<String> allClasses = Dataset.getAllClassesForDataset(dataset);
+			AnalyzeAction action = new AnalyzeAction(resultFile, attributeNames, allClasses, 
+					((UploadFileAction)actions.get(LOAD_ACTION)).getSelectedFile(), 
+					prefsFile);
+			actions.put(ANALYZE_ACTION, action);
+			enableAnalysis = true;
+			statusPanel.setFinishedState();
+			actionsPanel.getForwardButton().setDisabled(false);
+			actionsPanel.getFastForwardButton().setDisabled(false);
+			@SuppressWarnings("unchecked")
+			Map<String, String> map = (Map<String, String>)evt.getNewValue();
+			for(short key : actions.keySet())
+				actions.get(key).setInitialPreferences(map);
+			attemptNavigation(ANALYZE_TAB);
 		}
 	}
-
+	
 	/**
 	 * Initial setup
 	 */

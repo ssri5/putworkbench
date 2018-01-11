@@ -2,7 +2,11 @@ package in.ac.iitk.cse.putwb.ui.actions;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -198,6 +202,55 @@ public class SelectPrivacySettingsAction extends Action {
 		return utilityExceptionEditor.getExceptions();
 	}
 	
+	@Override
+	public void setInitialPreferences(Map<String, String> preferences) {
+		if(preferences != null) {
+			String putNumber = preferences.get(PUTExperiment.PUT_NUMBER_SWITCH);
+			if(putNumber != null)
+				putSlider.setCurrentValue(Float.parseFloat(putNumber.trim()));
+			String privacyExceptions = preferences.get(PUTExperiment.PRIVACY_EXCEPTIONS_SWITCH);
+			if(privacyExceptions != null) {
+				Pattern p = Pattern.compile("\\[[^\\]]*\\]");
+				Matcher m = p.matcher(privacyExceptions);
+				while(m.find()) {
+					String exceptionStr = m.group();
+					if(exceptionStr != null) {
+						exceptionStr = exceptionStr.replaceAll("\\s", "");	// Remove any extra spaces, if any
+						Pattern p2 = Pattern.compile("(\\d)+");
+						Matcher m2 = p2.matcher(exceptionStr);
+						Set<Integer> exception = new TreeSet<Integer>();
+						while(m2.find()) {
+							Integer attribute = Integer.parseInt(m2.group());
+							exception.add(attribute);
+						}
+						if(exception.size() > 0)
+							privacyExceptionEditor.addException(exception);
+					}
+				}
+			}
+			String utilityExceptions = preferences.get(PUTExperiment.UTILITY_EXCEPTIONS_SWITCH);
+			if(utilityExceptions != null) {
+				Pattern p = Pattern.compile("\\[[^\\]]*\\]");
+				Matcher m = p.matcher(utilityExceptions);
+				while(m.find()) {
+					String exceptionStr = m.group();
+					if(exceptionStr != null) {
+						exceptionStr = exceptionStr.replaceAll("\\s", "");	// Remove any extra spaces, if any
+						Pattern p2 = Pattern.compile("(\\d)+");
+						Matcher m2 = p2.matcher(exceptionStr);
+						Set<Integer> exception = new TreeSet<Integer>();
+						while(m2.find()) {
+							Integer attribute = Integer.parseInt(m2.group());
+							exception.add(attribute);
+						}
+						if(exception.size() > 0)
+							utilityExceptionEditor.addException(exception);
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * Sets up the exception editors
 	 */

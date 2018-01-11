@@ -282,6 +282,7 @@ public class StatusPanel extends JPanel {
 		expenseButton.setDisabled(false);
 		classifierButton.setDisabled(false);
 		runButton.setDisabled(false);
+		analyzeButton.setDisabled(true);
 		selectStatusButton(loadButton);
 	}
 }
