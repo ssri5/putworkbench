@@ -1,6 +1,3 @@
-/**
- * 
- */
 package in.ac.iitk.cse.putwb.partition;
 
 import java.util.Set;
@@ -15,6 +12,11 @@ import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
  */
 public class PartitionPlan {
 
+	/**
+	 * A flag to signify usage of random combinations, instead of generating them in dictionary order
+	 */
+	private boolean generateRandomly;
+	
 	/**
 	 * The proportion of attribute combinations to retain
 	 */
@@ -41,15 +43,6 @@ public class PartitionPlan {
 	private Set<Set<Integer>> utilityExceptions;
 	
 	/**
-	 * Initiates a new partition plan for the given number of attributes, partition size and maximum expense weight
-	 * @param numOfAttributes The number of attributes in the dataset
-	 * @param partitionSize The size of partitions to create
-	 */
-	public PartitionPlan(int numOfAttributes, int partitionSize) {
-		this(numOfAttributes, partitionSize, 1.0f);
-	}
-
-	/**
 	 * Initiates a new partition plan for the given number of attributes, partition size and expense weight
 	 * @param numOfAttributes The number of attributes in the dataset
 	 * @param partitionSize The size of partitions to create
@@ -60,6 +53,7 @@ public class PartitionPlan {
 		this.privacyExceptions = null;
 		setPartitionSize(partitionSize);
 		setExpense(expense);
+		generateRandomly = false;
 	}
 
 	/**
@@ -161,6 +155,14 @@ public class PartitionPlan {
 	public Set<Set<Integer>> getUtilityExceptionsSet() {
 		return utilityExceptions;
 	}
+
+	/**
+	 * Returns whether the combinations should be generated randomly (or in dictionary order). By default, returns <code>true</code>.
+	 * @return the generateRandomly <code>true</code> if combinations are to be generated randomly, <code>false</code> otherwise
+	 */
+	public boolean isGenerateRandomly() {
+		return generateRandomly;
+	}
 	
 	/**
 	 * Sets the expense weight for this partition plan. Must be in the range (0,1]
@@ -171,6 +173,15 @@ public class PartitionPlan {
 		if(expense <= 0 || expense > 1)
 			throw new IllegalArgumentException("The weight should be in (0,1] only");
 		this.expense = expense;
+	}
+	
+	/**
+	 * Sets whether combinations should be generated randomly (or in dictionary order)
+	 * @param generateRandomly <code>true</code> means generate combinations randomly, <code>false</code> means combinations shall be generated in dictionary order
+	 * 
+	 */
+	public void setGenerateRandomly(boolean generateRandomly) {
+		this.generateRandomly = generateRandomly;
 	}
 
 	/**

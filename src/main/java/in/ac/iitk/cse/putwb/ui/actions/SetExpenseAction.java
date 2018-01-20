@@ -25,28 +25,6 @@ import weka.core.Instances;
 public class SetExpenseAction extends Action {
 	
 	/**
-	 * This utility method calculates the value of the function <i>C(n, k)</i> or <i>"n choose k"</i> for given values of <i>n</i> and <i>k</i>
-	 * @param n The value of <i>n</i>
-	 * @param k The value of <i>k</i>
-	 * @return <i>C(n, k)</i> for given <i>n</i> and <i>k</i>
-	 */
-	private static BigInteger getNcKValue(int n, int k) {
-		if(k == 0)
-			return BigInteger.ZERO;
-		// Calculate two big integers: n * (n-1) * ... * (n-k+1) and k * (k-1) * ... * 2 * 1
-		BigInteger numerator = new BigInteger("" + n);
-		int temp = n;
-		while(--temp >= (n-k+1))
-			numerator = numerator.multiply(new BigInteger("" + temp));
-		BigInteger denominator = new BigInteger("" + k);
-		temp = k;
-		while(--temp > 1)
-			denominator = denominator.multiply(new BigInteger("" + temp));
-		// Return numerator / denominator
-		return numerator.divide(denominator);
-	}
-	
-	/**
 	 * The default value of horizontal expense
 	 */
 	private float DEFAULT_HORIZONTAL_EXPENSE = 1f;
@@ -260,7 +238,7 @@ public class SetExpenseAction extends Action {
 	 */
 	private String setVerticalExpenseInfoLabel(float currentValue) {
 		float putNumber = privacyAction.getPUTNumber();
-		BigInteger totalCombinations = getNcKValue(numOfAttributes, PUTExperiment.calculatePartitionSize(numOfAttributes, putNumber));
+		BigInteger totalCombinations = PUTExperiment.getNcKValue(numOfAttributes, PUTExperiment.calculatePartitionSize(numOfAttributes, putNumber));
 		BigInteger numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + currentValue)).toBigInteger();
 		if(numberOfCombinations.compareTo(BigInteger.ZERO) == 0) {
 			JOptionPane.showMessageDialog(null, "The number of attribute combinations cannot be 0. Resetting to default !!", "Error (0 combinations)", JOptionPane.ERROR_MESSAGE);

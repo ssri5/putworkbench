@@ -1,6 +1,3 @@
-/**
- * 
- */
 package in.ac.iitk.cse.putwb.experiment;
 
 import java.io.File;
@@ -9,6 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +34,10 @@ import in.ac.iitk.cse.putwb.log.BasicLogger;
 import in.ac.iitk.cse.putwb.partition.PartitionPlan;
 import in.ac.iitk.cse.putwb.partition.Partitions;
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.functions.SGD;
+import weka.core.Attribute;
 import weka.core.Instances;
+import weka.core.UnassignedClassException;
 
 /**
  * This class represents a particular Privacy-Utility tradeoff experiment. It involves providing a dataset, setting a number of parameters,
@@ -130,6 +133,11 @@ public class PUTExperiment {
 	public static final String PUT_NUMBER_SWITCH = "-put";
 	
 	/**
+	 * Switch for providing the combinations generation method
+	 */
+	public static final String GENERATION_METHOD_SWITCH = "-rand";
+	
+	/**
 	 * A seed parameter for randomization
 	 */
 	private static long seed;
@@ -190,6 +198,7 @@ public class PUTExperiment {
 		int k = 5;
 		boolean deleteMissing = false;
 		boolean removeDuplicates = true;
+		boolean useRandomGeneration = false;
 		try {
 			for(int i = 0; i < params.length; i++) {
 				if(params[i].compareToIgnoreCase(DATA_FILE_SWITCH) == 0)
@@ -234,8 +243,13 @@ public class PUTExperiment {
 					stderr = new File(params[++i]);
 					if(!(stderr.createNewFile() || stderr.canWrite()))
 						throw new IOException("Cannot create/write the standard error file - " + stderr.getAbsolutePath());
-				}
-				else
+				} else if(params[i].compareToIgnoreCase(GENERATION_METHOD_SWITCH) == 0) {
+					String generationMethodPreference = params[++i];
+					if(generationMethodPreference.compareToIgnoreCase("Y") == 0)
+						useRandomGeneration = true;
+					else if(generationMethodPreference.compareToIgnoreCase("N") != 0)
+						throw new IllegalArgumentException("Illegal option for attribute combinations generation method - " + generationMethodPreference);
+				} else
 					throw new RuntimeException("Invaid option - " + params[i]);
 			}
 			if(filePath == null)
@@ -266,7 +280,8 @@ public class PUTExperiment {
 				experiment.parseUtilityExceptions(utilityExceptions);
 			if(outputFile != null)
 				experiment.setOutput(outputFile);
-			
+			if(useRandomGeneration)
+				experiment.setGenerateRandomCombinations(true);
 			logger.outln("Created experiment...");
 			return experiment;
 		} catch (NumberFormatException e) {
@@ -309,6 +324,28 @@ public class PUTExperiment {
 	}
 	
 	/**
+	 * This utility method calculates the value of the function <i>C(n, k)</i> or <i>"n choose k"</i> for given values of <i>n</i> and <i>k</i>
+	 * @param n The value of <i>n</i>
+	 * @param k The value of <i>k</i>
+	 * @return <i>C(n, k)</i> for given <i>n</i> and <i>k</i>
+	 */
+	public static BigInteger getNcKValue(int n, int k) {
+		if(k == 0)
+			return BigInteger.ZERO;
+		// Calculate two big integers: n * (n-1) * ... * (n-k+1) and k * (k-1) * ... * 2 * 1
+		BigInteger numerator = new BigInteger("" + n);
+		int temp = n;
+		while(--temp >= (n-k+1))
+			numerator = numerator.multiply(new BigInteger("" + temp));
+		BigInteger denominator = new BigInteger("" + k);
+		temp = k;
+		while(--temp > 1)
+			denominator = denominator.multiply(new BigInteger("" + temp));
+		// Return numerator / denominator
+		return (numerator.divide(denominator));
+	}
+	
+	/**
 	 * The main to run this experiment
 	 * @param args The commandline arguments for the experiment
 	 */
@@ -323,6 +360,13 @@ public class PUTExperiment {
 			defaultLogger.errorln("Problems in creating experiment. Printing usage details:");
 			printUsageDetails();
 			System.exit(-1);
+		}
+		defaultLogger.outln("Running compatibility tests");
+		String error = experiment.runCompatibilityTests();
+		if(error != null) {
+			defaultLogger.errorln(error);
+			defaultLogger.outln("Problems in running experiment... aborting");
+			System.exit(1);
 		}
 		defaultLogger.outln("Starting experiment...");
 		experiment.startExperimentSync();
@@ -345,6 +389,10 @@ public class PUTExperiment {
 			System.out.print(" \"" + option + "\" ");
 		System.out.println();
 		System.out.println(V_EXPENSE_SWITCH + "\t (Default: 1.0) The vertical expense budget, e.g. "+ V_EXPENSE_SWITCH + " 0.8");
+		System.out.println(GENERATION_METHOD_SWITCH + "\t (Default: 'N') Advise usage of \"random generation of combinations\", instead of conventional \"dictionary order generation\"." +
+				"\n\t 'Y' implies \"attempt to generate attribute combinations randomly\" (useful for datasets with large number of attributes);" + 
+				"\n\t 'N' implies \"generate attribute combinations in dictionary order\"." + 
+				"\n\t e.g. "+ GENERATION_METHOD_SWITCH + " Y");
 		System.out.println(H_EXPENSE_SWITCH + "\t (Default: 1.0) The horizontal expense budget, e.g. "+ H_EXPENSE_SWITCH + " 0.3");
 		System.out.println(PRIVACY_EXCEPTIONS_SWITCH + "\t A set of privacy exceptions in the form {exception1,exception2...}." + 
 				"\n\t Each exception in turn, is expressed in the form [attribute1,attribute2...]. Avoid spaces in between, or include the full string within quotes." + 
@@ -360,7 +408,7 @@ public class PUTExperiment {
 		System.out.println(CLASSIFIER_OPTIONS_SWITCH + "\t Any custom options for the Weka Classifier to use in the form {option1,option2...}." + 
 				"\n\t These options are passed \"as provided\" to the classifier's setOptions() method. Refer to the documentation of respective classifers for details." + 
 				"\n\t To avoid problems in setting options with space, include the full string within quotes." + 
-				"\n\t Example (for J48 classifier):" + 
+				"\n\t e.g. (for J48 classifier):" + 
 				" \n\t " + CLASSIFIER_OPTIONS_SWITCH + " \"{-U, -C 0.25}\"");
 		System.out.println(K_CROSS_SWITCH + "\t (Default: 5) Use this value of \"k\" for k-cross validation, e.g. "+ K_CROSS_SWITCH + " 10");
 		System.out.println(MISSING_VALUE_SWITCH + "\t (Default: R) 'R' implies \"replace missing values with mean/mode\"; 'D' implies \"delete rows with missing values\", e.g. "+ MISSING_VALUE_SWITCH + " R");
@@ -370,6 +418,8 @@ public class PUTExperiment {
 		System.out.println("\nAdditional notes:");
 		System.out.println("1. In case of any conflicts between privacy and utility exceptions, privacy exceptions take precedence.");
 		System.out.println("2. If both, PUT number and partition size are provided, partition size is ignored.");
+		System.out.println("3. The \"random generation of combinations\" is not used when the number of combinations are low (less than 100,000), or the vertical expense is very high (>0.95)");
+		System.out.println("4. Utility exceptions are considered only when attributes are generated in dictionary order, otherwise they are ignored");
 	}
 
 	/**
@@ -483,6 +533,11 @@ public class PUTExperiment {
 	private volatile long numOfTasksInLearningQueue;
 	
 	/**
+	 * Use random combinations instead of systematic generation and pruning
+	 */
+	private boolean generateRandomCombinations;
+	
+	/**
 	 * The thread pool executor for partitioning the dataset
 	 */
 	private ThreadPoolExecutor partitioningExecutor;
@@ -511,7 +566,7 @@ public class PUTExperiment {
 	 * The result file to which the final statistics will be saved
 	 */
 	private File resultFile;
-	
+
 	/**
 	 * A {@link List} to hold {@link Future} results of the learning tasks
 	 */
@@ -536,7 +591,7 @@ public class PUTExperiment {
 	 * The vertical expense for this experiment
 	 */
 	private float vExpense;
-
+	
 	/**
 	 * Create a new instance of the Privacy-Utility tradeoff experiment
 	 * @param filePath The path to the (arff) data file
@@ -570,9 +625,10 @@ public class PUTExperiment {
 		resultFile = new File(dataFile.getParent(), "results.csv");
 		this.k = k;
 		availableProcessors = Runtime.getRuntime().availableProcessors();
+		generateRandomCombinations = false;
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
 	}
-	
+
 	/**
 	 * Create a new instance of the Privacy-Utility tradeoff experiment
 	 * @param filePath The path to the (arff) data file
@@ -608,7 +664,7 @@ public class PUTExperiment {
 		availableProcessors = Runtime.getRuntime().availableProcessors();
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
 	}
-
+	
 	/**
 	 * Add a privacy exception for this experiment
 	 * @param exception A {@link Set} of attribute indices from the original dataset
@@ -948,12 +1004,78 @@ public class PUTExperiment {
 	}
 
 	/**
+	 * Runs a set of compatibility tests to check current experiment configurations.<br/>
+	 * This method can be used to perform any checks over the dataset and parameters, before starting the experiment.<br/>
+	 * The method is <b>not</b> invoked implicitly, and must be called explicitly before starting the experiment.
+	 * Currently the following tests are performed in the method:
+	 * <ol>
+	 * 	<li>Check if the dataset's class attribute is set or not.</li>
+	 * 	<li>Check if the class attribute is nominal or not.</li>
+	 *	<li>Check that the number of attribute combinations to generate (without privacy exceptions) is not larger than the
+	 *		maximum value of integer - {@link Integer#MAX_VALUE}
+	 * 	<li>If the selected Classifier is <i>SGD</i>, the dataset must not have more than two classes.
+	 * </ol>
+	 * @return An error message and/or warning indicating a problem (the first one detected in the sequence), 
+	 * <code>null</code> if no problems occurred while running the tests
+	 */
+	public String runCompatibilityTests() {
+		/*
+		 * 1. Check for class attribute's presence
+		 */
+		Attribute classAttribute = null;
+		try {
+			classAttribute = dataset.classAttribute();
+		} catch(UnassignedClassException e) {
+			return "No class attribute in the dataset";
+		}
+		
+		/*
+		 * 2. Check if the class is nominal or not
+		 */
+		if(!classAttribute.isNominal())
+			return "The class attribute must be nominal";
+		
+		
+		/*
+		 * ##########################################################
+		 * 				Parameter specific tests below
+		 * ##########################################################
+		 */
+		
+		/*
+		 * 3. Check that the number of combinations to generate are not "too many"
+		 */
+		BigInteger noOfPossibleCombinations = PUTExperiment.getNcKValue(numOfAttributes, partitionSize);
+		BigDecimal numberOfCombinationsToGenerate = new BigDecimal(noOfPossibleCombinations);
+		numberOfCombinationsToGenerate = numberOfCombinationsToGenerate.multiply(new BigDecimal("" + vExpense)).setScale(0, RoundingMode.FLOOR);
+		if(numberOfCombinationsToGenerate.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0) {
+			return "Too many partitons to generate: " + numberOfCombinationsToGenerate;
+		}
+		
+		/*
+		 * 4. If the selected classifier is SGD, make sure that the dataset is not multi-class
+		 */
+		if(classifierType.equals(SGD.class) && classAttribute.numValues() > 2)
+			return "The selected classifier SGD, does not support multi-class datasets";
+			
+		return null;
+	}
+	
+	/**
 	 * Sets the options to be passed on to the Weka classifier
 	 * @see AbstractClassifier#setOptions(String[])
 	 * @param classifierOptions The options for the classifier
 	 */
 	public void setClassifierOptions(String[] classifierOptions) {
 		this.classifierOptions = classifierOptions;
+	}
+
+	/**
+	 * Sets whether to use random combinations instead of systematic generation and pruning
+	 * @param generateRandomCombinations <code>true</code> implies usage of random combinations, <code>false</code> implies usage of systematic generation and pruning 
+	 */
+	public void setGenerateRandomCombinations(boolean generateRandomCombinations) {
+		this.generateRandomCombinations = generateRandomCombinations;
 	}
 
 	/**
@@ -992,6 +1114,7 @@ public class PUTExperiment {
 		// Create partitioned datasets
 		try {
 			PartitionPlan plan = new PartitionPlan(numOfAttributes, partitionSize, vExpense);
+			plan.setGenerateRandomly(generateRandomCombinations);
 			plan.setPrivacyExceptions(privacyExceptions);
 			plan.setUtilityExceptions(utilityExceptions);
 			datasetsReadyQueue = new ArrayBlockingQueue<Dataset>(datasetsReadyQueueSize);

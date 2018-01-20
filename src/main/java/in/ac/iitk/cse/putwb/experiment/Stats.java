@@ -1,6 +1,3 @@
-/**
- * 
- */
 package in.ac.iitk.cse.putwb.experiment;
 
 import java.util.Collections;

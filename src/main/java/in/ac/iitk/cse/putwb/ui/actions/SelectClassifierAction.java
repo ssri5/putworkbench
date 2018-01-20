@@ -39,7 +39,7 @@ public class SelectClassifierAction extends Action implements ActionListener {
 	/**
 	 * The constant for the default classifier to use
 	 */
-	private static final String DEFAULT_CLASSIFIER = "SGD";
+	private static final String DEFAULT_CLASSIFIER = "J48";
 
 	/**
 	 * Shows a description of the selected classifier

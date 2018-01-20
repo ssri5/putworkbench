@@ -1,6 +1,3 @@
-/**
- * 
- */
 package in.ac.iitk.cse.putwb.classify;
 
 import java.lang.reflect.Field;
@@ -195,16 +192,12 @@ public class DataClassifier {
 
 	/**
 	 * Attempts to perform a <i>k-fold cross validation</i> over the dataset for the chosen classifier
+	 * @throws Exception if the cross-validation process runs into a glitch
 	 */
-	public void evaluateModel() {
-		try {
-			eval = new Evaluation(dataset.getInstances());
-			setModelType();
-			eval.crossValidateModel(model, dataset.getInstances(), k, new Random());
-		} catch (Exception e) {
-			e.printStackTrace();
-			eval = null;
-		}
+	public void evaluateModel() throws Exception {
+		eval = new Evaluation(dataset.getInstances());
+		setModelType();
+		eval.crossValidateModel(model, dataset.getInstances(), k, new Random());
 	}
 
 	/**

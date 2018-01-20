@@ -1,6 +1,3 @@
-/**
- * 
- */
 package in.ac.iitk.cse.putwb.classify;
 
 import weka.classifiers.AbstractClassifier;

@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -124,6 +125,11 @@ public class RunAction extends Action implements ActionListener {
 	private JLabel verticalExpenseLabel;
 	
 	/**
+	 * A checkbox to take preference for attribute generation method
+	 */
+	private JCheckBox randomGenerationAdvise;
+	
+	/**
 	 * Creates a new instance of Execution action, with links to the other required actions
 	 * @param datasetInfo The action for dataset selection
 	 * @param privacyInfo The action for privacy settings
@@ -140,7 +146,7 @@ public class RunAction extends Action implements ActionListener {
 				
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[]{1.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.99, 1.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.8, 0.2, 0.0};
 		setLayout(gridBagLayout);
 		
 		JLabel summaryLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Summary</font></center></html>");
@@ -421,28 +427,18 @@ public class RunAction extends Action implements ActionListener {
 			}
 		});
 		
-		JPanel crossValidationPanel = new JPanel();
-		crossValidationPanel.setOpaque(false);
-		GridBagConstraints gbc_crossValidationPanel = new GridBagConstraints();
-		gbc_crossValidationPanel.insets = new Insets(0, 0, 10, 0);
-		gbc_crossValidationPanel.fill = GridBagConstraints.BOTH;
-		gbc_crossValidationPanel.gridx = 0;
-		gbc_crossValidationPanel.gridy = 2;
-		add(crossValidationPanel, gbc_crossValidationPanel);
+		JPanel otherInputsPanel = new JPanel();
+		otherInputsPanel.setOpaque(false);
+		GridBagConstraints gbc_otherInputsPanel = new GridBagConstraints();
+		gbc_otherInputsPanel.insets = new Insets(0, 0, 10, 0);
+		gbc_otherInputsPanel.fill = GridBagConstraints.VERTICAL;
+		gbc_otherInputsPanel.gridx = 0;
+		gbc_otherInputsPanel.gridy = 2;
+		add(otherInputsPanel, gbc_otherInputsPanel);
 		GridBagLayout gbl_crossValidationPanel = new GridBagLayout();
-		gbl_crossValidationPanel.columnWeights = new double[]{0.0, 0.0, 0.0};
-		gbl_crossValidationPanel.rowWeights = new double[]{1.0};
-		crossValidationPanel.setLayout(gbl_crossValidationPanel);
-		
-		JLabel infoLabel9 = new JLabel("<html><center><font size='4' color='#9e1503'>Use</font></center></html>");
-		infoLabel9.setHorizontalAlignment(SwingConstants.RIGHT);
-		GridBagConstraints gbc_infoLabel9 = new GridBagConstraints();
-		gbc_infoLabel9.anchor = GridBagConstraints.EAST;
-		gbc_infoLabel9.fill = GridBagConstraints.HORIZONTAL;
-		gbc_infoLabel9.insets = new Insets(0, 0, 0, 5);
-		gbc_infoLabel9.gridx = 0;
-		gbc_infoLabel9.gridy = 0;
-		crossValidationPanel.add(infoLabel9, gbc_infoLabel9);
+		gbl_crossValidationPanel.columnWeights = new double[]{0.0, 1.0};
+		gbl_crossValidationPanel.rowWeights = new double[]{1.0, 1.0};
+		otherInputsPanel.setLayout(gbl_crossValidationPanel);
 		
 		kTextField = new JTextField();
 		kTextField.setHorizontalAlignment(SwingConstants.CENTER);
@@ -450,19 +446,37 @@ public class RunAction extends Action implements ActionListener {
 		kTextField.setText("5");
 		kTextField.addActionListener(this);
 		GridBagConstraints gbc_kTextField = new GridBagConstraints();
-		gbc_kTextField.insets = new Insets(0, 0, 0, 0);
+		gbc_kTextField.insets = new Insets(0, 5, 0, 0);
 		gbc_kTextField.gridx = 1;
 		gbc_kTextField.gridy = 0;
-		crossValidationPanel.add(kTextField, gbc_kTextField);
+		otherInputsPanel.add(kTextField, gbc_kTextField);
 		
-		JLabel infoLabel10 = new JLabel("<html><center><font size='4' color='#9e1503'>-fold cross validation to collect model statistics</font></center></html>");
+		JLabel infoLabel10 = new JLabel("<html><center><font size='4' color='#9e1503'>The value of <b><i>k</i></b> to use for k-fold cross validation while collecting model statistics</font></center></html>");
 		GridBagConstraints gbc_infoLabel10 = new GridBagConstraints();
 		gbc_infoLabel10.anchor = GridBagConstraints.WEST;
 		gbc_infoLabel10.fill = GridBagConstraints.HORIZONTAL;
 		gbc_infoLabel10.insets = new Insets(0, 0, 0, 0);
-		gbc_infoLabel10.gridx = 2;
+		gbc_infoLabel10.gridx = 0;
 		gbc_infoLabel10.gridy = 0;
-		crossValidationPanel.add(infoLabel10, gbc_infoLabel10);
+		otherInputsPanel.add(infoLabel10, gbc_infoLabel10);
+		
+		randomGenerationAdvise = new JCheckBox();
+		randomGenerationAdvise.setOpaque(false);
+		GridBagConstraints gbc_randomGenerationAdvise = new GridBagConstraints();
+		gbc_randomGenerationAdvise.anchor = GridBagConstraints.WEST;
+		gbc_randomGenerationAdvise.fill = GridBagConstraints.HORIZONTAL;
+		gbc_randomGenerationAdvise.insets = new Insets(0, 5, 0, 5);
+		gbc_randomGenerationAdvise.gridx = 1;
+		gbc_randomGenerationAdvise.gridy = 1;
+		otherInputsPanel.add(randomGenerationAdvise, gbc_randomGenerationAdvise);
+		
+		JLabel infoLabel11 = new JLabel("<html><center><font size='4' color='#9e1503'>Advise using random generation method for generating attribute combinations</font></center></html>");
+		GridBagConstraints gbc_infoLabel11 = new GridBagConstraints();
+		gbc_infoLabel11.fill = GridBagConstraints.HORIZONTAL;
+		gbc_infoLabel11.insets = new Insets(0, 0, 0, 0);
+		gbc_infoLabel11.gridx = 0;
+		gbc_infoLabel11.gridy = 1;
+		otherInputsPanel.add(infoLabel11, gbc_infoLabel11);
 		
 		JButton startTasksButton = new JButton(" Start Tasks ");
 		GridBagConstraints gbc_startTasksButton = new GridBagConstraints();
@@ -504,7 +518,8 @@ public class RunAction extends Action implements ActionListener {
 		float hExpense = expenseInfo.getHorizontalExpense();
 		String classifier = classifierInfo.getClassifier();
 		String classifierOptions = classifierInfo.getCustomOptions();
-		String[] params = new String[24];
+		char adviseRandomGeneration = randomGenerationAdvise.isSelected() ? 'Y' : 'N';
+		String[] params = new String[26];
 		
 		params[0] = PUTExperiment.DATA_FILE_SWITCH;
 		params[1] = dataset;
@@ -542,7 +557,16 @@ public class RunAction extends Action implements ActionListener {
 		params[22] = PUTExperiment.OUTPUT_FILE_SWITCH;
 		params[23] = temporaryFile;
 		
+		params[24] = PUTExperiment.GENERATION_METHOD_SWITCH;
+		params[25] = "" + adviseRandomGeneration;
+		
 		PUTExperiment experiment = PUTExperiment.createExperiment(params);
+		
+		String error = experiment.runCompatibilityTests();
+		if(error != null) {
+			JOptionPane.showMessageDialog(null, "Could not start experiment !!\nReason: " + error, "Problem in stating experiment", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		
 		pcs.firePropertyChange(TASKS_RUNNING_PROPERTY, null, true);
 		
@@ -574,7 +598,7 @@ public class RunAction extends Action implements ActionListener {
 		else
 			pcs.firePropertyChange(TASKS_COMPLETED_PROPERTY, null, false);
 	}
-
+	
 	/**
 	 * Return the preferences for last successfully completed experiment
 	 * @return The preferences file
@@ -597,6 +621,9 @@ public class RunAction extends Action implements ActionListener {
 			String kCrossValidationPreference = preferences.get(PUTExperiment.K_CROSS_SWITCH);
 			if(kCrossValidationPreference != null)
 				kTextField.setText(kCrossValidationPreference);
+			String generationMethodPreference = preferences.get(PUTExperiment.GENERATION_METHOD_SWITCH);
+			if(generationMethodPreference != null)
+				randomGenerationAdvise.setSelected(generationMethodPreference.trim() == "Y");
 		}
 	}
 
