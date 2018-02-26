@@ -2,12 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>in.ac.iitk.cse</groupId>
   <artifactId>putwb</artifactId>
-  <version>1.31</version>
+  <version>1.32</version>
   <name>PUTWorkbench</name>
   <description>A Privacy Utility Trade-off Analysis Tool</description>
   <properties>
   	<maven.compiler.source>1.8</maven.compiler.source>
   	<maven.compiler.target>1.8</maven.compiler.target>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  	<timestamp>${maven.build.timestamp}</timestamp>
+  	<maven.build.timestamp.format>dd-MMM-yyyy</maven.build.timestamp.format>
   </properties>
   <dependencies>
   	<dependency>
@@ -17,7 +20,39 @@
   	</dependency>
   </dependencies>
   <build>
+  	<resources>
+  		<resource>
+  			<directory>src/main/resources</directory>
+  			<filtering>true</filtering>
+  		</resource>
+  	</resources>
   	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-resources-plugin</artifactId>
+  			<version>3.0.1</version>
+  			<executions>
+  				<execution>
+  					<id>readme-md</id>
+  					<phase>process-resources</phase>
+  					<goals>
+  						<goal>copy-resources</goal>
+  					</goals>
+  					<configuration>
+  						<outputDirectory>${project.basedir}</outputDirectory>
+  						<resources>
+  							<resource>
+  								<directory>src/main/resources</directory>
+  								<includes>
+  									<include>README.md</include>
+  								</includes>
+  								<filtering>true</filtering>
+  							</resource>
+  						</resources>
+  					</configuration>
+  				</execution>
+  			</executions>
+  		</plugin>
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-shade-plugin</artifactId>

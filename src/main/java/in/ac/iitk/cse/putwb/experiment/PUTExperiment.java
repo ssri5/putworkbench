@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -98,6 +100,11 @@ public class PUTExperiment {
 	public static final String DUPLICATE_ROWS_SWITCH = "-dr";
 	
 	/**
+	 * Switch for providing the combinations generation method
+	 */
+	public static final String GENERATION_METHOD_SWITCH = "-rand";
+
+	/**
 	 * Switch for providing the horizontal expense
 	 */
 	public static final String H_EXPENSE_SWITCH = "-h";
@@ -106,36 +113,31 @@ public class PUTExperiment {
 	 * Switch for providing the value of <i>k</i> for k-cross validation 
 	 */
 	public static final String K_CROSS_SWITCH = "-k";
-
+	
 	/**
 	 * Switch for the method to handle missing values
 	 */
 	public static final String MISSING_VALUE_SWITCH = "-mv";
-	
+
 	/**
 	 * Switch for providing the put number
 	 */
 	public static final String OUTPUT_FILE_SWITCH = "-out";
-
+	
 	/**
 	 * Switch for providing the partition size
 	 */
 	public static final String PARTITION_SIZE_SWITCH = "-ps";
-	
+
 	/**
 	 * Switch for providing the privacy exceptions
 	 */
 	public static final String PRIVACY_EXCEPTIONS_SWITCH = "-pex";
-
+	
 	/**
 	 * Switch for providing the put number
 	 */
 	public static final String PUT_NUMBER_SWITCH = "-put";
-	
-	/**
-	 * Switch for providing the combinations generation method
-	 */
-	public static final String GENERATION_METHOD_SWITCH = "-rand";
 	
 	/**
 	 * A seed parameter for randomization
@@ -146,7 +148,7 @@ public class PUTExperiment {
 	 * Switch for providing the standard error stream to use
 	 */
 	public static final String STDERR_SWITCH = "-stderr";
-
+	
 	/**
 	 * Switch for providing the standard output stream to use
 	 */
@@ -156,11 +158,36 @@ public class PUTExperiment {
 	 * Switch for providing the utility exceptions
 	 */
 	public static final String UTILITY_EXCEPTIONS_SWITCH = "-uex";
-	
+
 	/**
 	 * Switch for providing the vertical expense
 	 */
 	public static final String V_EXPENSE_SWITCH = "-v";
+	
+	/**
+	 * Contains the version information of the tool
+	 */
+	public static String versionInfo = "";
+	
+	/**
+	 * Collects any information from the .properties file
+	 */
+	static {
+		Properties prop = new Properties();
+		try {
+			prop.load(PUTExperiment.class.getClassLoader().getResourceAsStream(".properties"));
+			String version = prop.getProperty("build.version");
+			if(version == null || version.trim().length() == 0)
+				version = "Unknown";
+			String date = prop.getProperty("build.date");
+			if(date == null || date.trim().length() == 0)
+				date = "Unknown";
+			date = "Build Date: " + date;
+			versionInfo = version + " (" + date + ")";
+		} catch (Exception e) {
+			System.err.println("Could not read the properties file. Version Unknonwn.");
+		}
+	}
 	
 	/**
 	 * A utility method that maps put number, to number of attributes to choose at a time
@@ -378,6 +405,9 @@ public class PUTExperiment {
 	 * Prints a summary of the usage of the experiment class, with explanation of various switches
 	 */
 	public static void printUsageDetails() {
+		System.out.println("-----------------------------------------------");
+		System.out.println("  PUTWorkbench " + versionInfo);
+		System.out.println("-----------------------------------------------");
 		System.out.println("\nUsage options:");
 		System.out.println(DATA_FILE_SWITCH + "\t (Required) Path to the (arff) data file, e.g. " + DATA_FILE_SWITCH + " /home/user/data.arff");
 		System.out.println(PUT_NUMBER_SWITCH + "\t (Required, if " + PARTITION_SIZE_SWITCH + " is not provided) The privacy -utility tradeoff number, e.g. "+ PUT_NUMBER_SWITCH + " -0.7");
@@ -473,6 +503,11 @@ public class PUTExperiment {
 	private int datasetsReadyQueueSize = 1000;
 
 	/**
+	 * Use random combinations instead of systematic generation and pruning
+	 */
+	private boolean generateRandomCombinations;
+	
+	/**
 	 * The horizontal expense for this experiment
 	 */
 	private float hExpense;
@@ -516,12 +551,12 @@ public class PUTExperiment {
 	 * The number of partitioned datasets ready for creating learning requests
 	 */
 	private volatile long numOfPartitionedDatasets;
-	
+
 	/**
 	 * The number of result lines already written to the results file
 	 */
 	private volatile long numOfResultsWrittenToFile;
-
+	
 	/**
 	 * The number of learning requests completed till now
 	 */
@@ -531,11 +566,6 @@ public class PUTExperiment {
 	 * The number of learning requests waiting in queue to be processed
 	 */
 	private volatile long numOfTasksInLearningQueue;
-	
-	/**
-	 * Use random combinations instead of systematic generation and pruning
-	 */
-	private boolean generateRandomCombinations;
 	
 	/**
 	 * The thread pool executor for partitioning the dataset

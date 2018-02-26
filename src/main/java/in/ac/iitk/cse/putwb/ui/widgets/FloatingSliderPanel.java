@@ -21,6 +21,11 @@ import javax.swing.event.ChangeListener;
 public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	
 	/**
+	 * The maximum precision (number of digits after the decimal point) that the slider can provide
+	 */
+	public static final int MAX_PRECISION = 6;
+	
+	/**
 	 * Holds the current value of the slider at any point in time
 	 */
 	private float currentValue;
@@ -39,6 +44,11 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	 * The minimum value that the slider can take
 	 */
 	private float min;
+	
+	/**
+	 * The multiplier (10 raised to power precision) which is used to convert the floating value to map it to a corresponding integer range
+	 */
+	private int multiplier;
 
 	/**
 	 * The bare slider widget - can choose integer values only
@@ -51,7 +61,8 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	private JLabel valueLabel;
 	
 	/**
-	 * Creates a floating slider panel, with given low and high limits, with initial value set to the mid point of the range
+	 * Creates a floating slider panel, with given low and high limits, with initial value set to the mid point of the range,
+	 * and precision set to {@link #MAX_PRECISION}
 	 * @param min The minimum selectable value on this slider
 	 * @param max The maximum selectable value on this slider
 	 */
@@ -60,13 +71,28 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	}
 
 	/**
-	 * Creates a floating slider panel, with given low and high limits, as well as the initial value of the slider
+	 * Creates a floating slider panel, with given low and high limits, as well as the initial value of the slider,
+	 * and precision set to {@link #MAX_PRECISION}
 	 * @param min The minimum selectable value on this slider
 	 * @param max The maximum selectable value on this slider
 	 * @param initialValue The initial value
 	 */
 	public FloatingSliderPanel(float min, float max, float initialValue) {
+		this(min, max, initialValue, MAX_PRECISION);
+	}
+	
+	/**
+	 * Creates a floating slider panel, with given low and high limits, the initial value of the slider as well as the required precision
+	 * @param min The minimum selectable value on this slider
+	 * @param max The maximum selectable value on this slider
+	 * @param initialValue The initial value
+	 * @param precision The precision (number of digits after the decimal point) that this slider provides. Must be between 0 and {@link #MAX_PRECISION}
+	 */
+	public FloatingSliderPanel(float min, float max, float initialValue, int precision) {
 		super();
+		if(precision < 0 || precision > MAX_PRECISION)
+			throw new IllegalArgumentException("Precision must be set to a value between 0 and " + MAX_PRECISION);
+		multiplier = (int)Math.pow(10, precision);
 		this.min = min;
 		this.max = max;
 		setOpaque(false);
@@ -77,17 +103,19 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0};
 		setLayout(gridBagLayout);
 		
-		slider = new JSlider(JSlider.HORIZONTAL, (int)(min * 1000), (int)(max * 1000), (int)(initialValue * 1000));
+		slider = new JSlider(JSlider.HORIZONTAL, (int)(min * multiplier), (int)(max * multiplier), (int)(initialValue * multiplier));
 		Hashtable<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
-		labels.put((int)(min * 1000), new JLabel("" + min));
-		labels.put((int)(max * 1000), new JLabel("" + max));
+		labels.put((int)(min * multiplier), new JLabel("" + min));
+		labels.put((int)(max * multiplier), new JLabel("" + max));
 		for(float d : midValues)
-			labels.put((int)(d*1000), new JLabel("" + d));
+			labels.put((int)(d*multiplier), new JLabel("" + d));
 		slider.setLabelTable(labels);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
-		slider.setMajorTickSpacing(100);
-		slider.setMinorTickSpacing(10);
+		if(multiplier > 10)
+			slider.setMajorTickSpacing(multiplier/10);
+		if(multiplier > 100)
+			slider.setMinorTickSpacing(multiplier/100);
 		slider.addChangeListener(this);
 		
 		GridBagConstraints gbc_slider = new GridBagConstraints();
@@ -133,7 +161,7 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	public void setCurrentValue(float value) {
 		if(value < min || value > max)
 			throw new IllegalArgumentException("The value must be between " + min + " and " + max);
-		slider.setValue((int)(value*1000));
+		slider.setValue((int)(value*multiplier));
 		setValueLabelText(value);
 		slider.updateUI();
 	}
@@ -158,7 +186,7 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		JSlider slider = (JSlider)e.getSource();
-		currentValue = slider.getValue() / 1000f;
+		currentValue = slider.getValue() / (float)multiplier;
 		setValueLabelText(currentValue);
 	}
 }

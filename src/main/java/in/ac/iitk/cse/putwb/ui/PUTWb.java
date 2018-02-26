@@ -242,7 +242,7 @@ public class PUTWb implements PropertyChangeListener {
 	 */
 	@SuppressWarnings("serial")
 	private void initialize() {
-		frame = new JFrame("Privacy Utility Tradeoff Workbench") {
+		frame = new JFrame("Privacy Utility Tradeoff Workbench " + PUTExperiment.versionInfo) {
 
 			public void paint(Graphics g) {
 				super.paint(g);
