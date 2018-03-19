@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,19 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RandomCombinationGenerator implements Runnable { 
 	
 	/**
-	 * Signals any worker threads that they must stop attempting generation of a new combination
+	 * The last checked size of the combinations set, used to check progress
 	 */
-	private static AtomicBoolean stopGeneration;
-	
-	/**
-	 * A set of exceptions to honour
-	 */
-	private static Set<Set<Integer>> ignoreTogetherSet;
-	
-	/**
-	 * If no new random combination could be generated in specified number of seconds, the generator gives up.
-	 */
-	private static final int TIMEOUT_IN_SECONDS = 60;
+	private static int combinationsSize;
 	
 	/**
 	 * The thread-safe wrapper set that contains the generated partitions at any point
@@ -39,14 +30,24 @@ public class RandomCombinationGenerator implements Runnable {
 	private static Set<Set<Integer>> combinationsWrapper;
 	
 	/**
+	 * A set of exceptions to honour
+	 */
+	private static Set<Set<Integer>> ignoreTogetherSet;
+	
+	/**
 	 * A list of numbers from 1 to n
 	 */
 	private static List<Integer> startingList;
 	
 	/**
-	 * The last checked size of the combinations set, used to check progress
+	 * Signals any worker threads that they must stop attempting generation of a new combination
 	 */
-	private static int combinationsSize;
+	private static AtomicBoolean stopGeneration;
+	
+	/**
+	 * If no new random combination could be generated in specified number of seconds, the generator gives up.
+	 */
+	private static final int TIMEOUT_IN_SECONDS = 60;
 	
 	/**
 	 * Generates a fixed number of random combinations for given values of n and k, honouring a given set of privacy exceptions.
@@ -58,8 +59,27 @@ public class RandomCombinationGenerator implements Runnable {
 	 * @throws Exception If something goes wrong while generating the combinations
 	 */
 	public static Set<Set<Integer>> generateRandomCombinations(int n, int k, int numberOfCombinationsToGenerate, Set<Set<Integer>> ignoreTogether) throws Exception {
+		return generateRandomCombinations(n, k, numberOfCombinationsToGenerate, ignoreTogether, null);
+	}
+	
+	/**
+	 * Generates a fixed number of random combinations for given values of n and k, honouring a given set of privacy exceptions.
+	 * If some partitions have already been generated, they can be provided to avoid additional efforts. 
+	 * This is useful for cases where an experiment is being resumed after interruption. 
+	 * @param n The value of <i>n</i> in <i>C(n, k)</i>
+	 * @param k The value of <i>k</i> in <i>C(n, k)</i>
+	 * @param noOfCombinationsToGenerate The number of combinations to generate
+	 * @param ignoreTogether A {@link Set} of privacy exceptions
+	 * @param alreadyGenerated A {@link Set} of already generated combinations
+	 * @return A {@link Set} of random combinations according to requested parameters
+	 * @throws Exception If something goes wrong while generating the combinations
+	 */
+	public static Set<Set<Integer>> generateRandomCombinations(int n, int k, int numberOfCombinationsToGenerate, Set<Set<Integer>> ignoreTogether,
+			Set<Set<Integer>> alreadyGenerated) throws Exception {
 		ignoreTogetherSet = new HashSet<Set<Integer>>(ignoreTogether);
-		Set<Set<Integer>> combinationsSet = new HashSet<Set<Integer>>();
+		Set<Set<Integer>> combinationsSet = new LinkedHashSet<Set<Integer>>();
+		if(alreadyGenerated != null)
+			combinationsSet.addAll(alreadyGenerated);
 		combinationsWrapper = Collections.synchronizedSet(combinationsSet);
 		startingList = new ArrayList<Integer>();
 		stopGeneration = new AtomicBoolean(false);

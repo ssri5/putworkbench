@@ -1,5 +1,6 @@
 package in.ac.iitk.cse.putwb.experiment;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -10,8 +11,10 @@ import java.util.Set;
  * @author Saurabh Srivastava
  *
  */
-public class Stats {
+public class Stats implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constant for Accuracy metric
 	 */

@@ -181,7 +181,7 @@ public class DictionaryCombinationsGenerator {
 	/**
 	 * Produces a {@link Set} of elements, containing all integers from from the starting number to the ending number (both included)	
 	 * @param startElement The starting integer
-	 * @param endElement The edning integer
+	 * @param endElement The ending integer
 	 * @return A {@link Set} containing the required integers in increasing order
 	 */
 	private Set<Integer> getSetWithElements(int startElement, int endElement) {

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -35,6 +34,7 @@ import in.ac.iitk.cse.putwb.io.DatasetLoader;
 import in.ac.iitk.cse.putwb.log.BasicLogger;
 import in.ac.iitk.cse.putwb.partition.PartitionPlan;
 import in.ac.iitk.cse.putwb.partition.Partitions;
+import in.ac.iitk.cse.putwb.partition.RandomCombinationGenerator;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.functions.SGD;
 import weka.core.Attribute;
@@ -95,10 +95,17 @@ public class PUTExperiment {
 	public static final String DATA_FILE_SWITCH = "-f";
 
 	/**
+	 * Maximum number of datasets that can wait in the queue.<br/>
+	 * This is important as the memory available may no longer be enough to hold too many datasets simultaneously.<br/>
+	 * If the memory available to the JVM is significantly restricted, reduce this number.
+	 */
+	private static final int DATASET_READY_QUEUE_SIZE = 1000;
+
+	/**
 	 * Switch for the method to handle duplicate rows
 	 */
 	public static final String DUPLICATE_ROWS_SWITCH = "-dr";
-	
+
 	/**
 	 * Switch for providing the combinations generation method
 	 */
@@ -113,7 +120,7 @@ public class PUTExperiment {
 	 * Switch for providing the value of <i>k</i> for k-cross validation 
 	 */
 	public static final String K_CROSS_SWITCH = "-k";
-	
+
 	/**
 	 * Switch for the method to handle missing values
 	 */
@@ -123,7 +130,7 @@ public class PUTExperiment {
 	 * Switch for providing the put number
 	 */
 	public static final String OUTPUT_FILE_SWITCH = "-out";
-	
+
 	/**
 	 * Switch for providing the partition size
 	 */
@@ -133,12 +140,12 @@ public class PUTExperiment {
 	 * Switch for providing the privacy exceptions
 	 */
 	public static final String PRIVACY_EXCEPTIONS_SWITCH = "-pex";
-	
+
 	/**
 	 * Switch for providing the put number
 	 */
 	public static final String PUT_NUMBER_SWITCH = "-put";
-	
+
 	/**
 	 * A seed parameter for randomization
 	 */
@@ -148,12 +155,12 @@ public class PUTExperiment {
 	 * Switch for providing the standard error stream to use
 	 */
 	public static final String STDERR_SWITCH = "-stderr";
-	
+
 	/**
 	 * Switch for providing the standard output stream to use
 	 */
 	public static final String STDOUT_SWITCH = "-stdout";
-	
+
 	/**
 	 * Switch for providing the utility exceptions
 	 */
@@ -163,12 +170,12 @@ public class PUTExperiment {
 	 * Switch for providing the vertical expense
 	 */
 	public static final String V_EXPENSE_SWITCH = "-v";
-	
+
 	/**
 	 * Contains the version information of the tool
 	 */
 	public static String versionInfo = "";
-	
+
 	/**
 	 * Collects any information from the .properties file
 	 */
@@ -188,7 +195,7 @@ public class PUTExperiment {
 			System.err.println("Could not read the properties file. Version Unknonwn.");
 		}
 	}
-	
+
 	/**
 	 * A utility method that maps put number, to number of attributes to choose at a time
 	 * @param numOfAttributes Total number of attributes in the dataset
@@ -203,7 +210,7 @@ public class PUTExperiment {
 		float ratio = (putNumber + 1) / 2;
 		return (int) Math.floor(1 + ratio * (numOfAttributes - 1));
 	}
-	
+
 	/**
 	 * Creates a Privacy-Utility tradeoff experiment with the given parameters and logging options 
 	 * @param params The commandline arguments provided for this experiment
@@ -285,7 +292,7 @@ public class PUTExperiment {
 				throw new RuntimeException("Either PUT Number or partition size is required");
 			if(classifier == null)
 				throw new RuntimeException("Classifier type required");
-			
+
 			if(stdout == null && stderr == null)
 				logger = BasicLogger.getDefaultLogger();
 			else if(stdout != null && stderr == null)
@@ -309,6 +316,7 @@ public class PUTExperiment {
 				experiment.setOutput(outputFile);
 			if(useRandomGeneration)
 				experiment.setGenerateRandomCombinations(true);
+			experiment.setRecoveryInformation(params);
 			logger.outln("Created experiment...");
 			return experiment;
 		} catch (NumberFormatException e) {
@@ -322,7 +330,7 @@ public class PUTExperiment {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * A utility method, that takes an unfragemented dataset, a partition of its attribute indices, and returns the dataset, 
 	 * with reduced number of rows, if required, according to a given proportion
@@ -349,7 +357,7 @@ public class PUTExperiment {
 		}
 		return copy;
 	}
-	
+
 	/**
 	 * This utility method calculates the value of the function <i>C(n, k)</i> or <i>"n choose k"</i> for given values of <i>n</i> and <i>k</i>
 	 * @param n The value of <i>n</i>
@@ -371,7 +379,7 @@ public class PUTExperiment {
 		// Return numerator / denominator
 		return (numerator.divide(denominator));
 	}
-	
+
 	/**
 	 * The main to run this experiment
 	 * @param args The commandline arguments for the experiment
@@ -400,7 +408,7 @@ public class PUTExperiment {
 		defaultLogger.outln("Done !!");
 		defaultLogger.outln("Results saved to - " + experiment.getResultFile().getAbsolutePath());
 	}
-	
+
 	/**
 	 * Prints a summary of the usage of the experiment class, with explanation of various switches
 	 */
@@ -456,7 +464,7 @@ public class PUTExperiment {
 	 * A flag that tells the results collection thread to start waiting for results
 	 */
 	private boolean allLearningRequestsInQueue;
-	
+
 	/**
 	 * A flag that tells if the current experiment is running in asynchronous mode or not (default: <code>false</code>)
 	 */
@@ -468,6 +476,11 @@ public class PUTExperiment {
 	private Thread asyncThread = null;
 	
 	/**
+	 * Contains the partitions being used by this experiment
+	 */
+	private Set<Set<Integer>> attributePartitions = null;
+
+	/**
 	 * The number of processors available for use on the machine over which the experiment is being run
 	 */
 	private int availableProcessors;
@@ -478,7 +491,7 @@ public class PUTExperiment {
 	 * @see AbstractClassifier#setOptions(String[]) 
 	 */
 	private String[] classifierOptions;
-	
+
 	/**
 	 * The classifier type to use for this experiment.<br/> 
 	 * The allowed types could be one of the pre-defined constants.
@@ -496,57 +509,50 @@ public class PUTExperiment {
 	private BlockingQueue<Dataset> datasetsReadyQueue;
 
 	/**
-	 * Maximum number of datasets that can wait in the queue.<br/>
-	 * This is important as the memory available may no longer be enough to hold too many datasets simultaneously.<br/>
-	 * If the memory available to the JVM is significantly restricted, reduce this number.
-	 */
-	private int datasetsReadyQueueSize = 1000;
-
-	/**
 	 * Use random combinations instead of systematic generation and pruning
 	 */
 	private boolean generateRandomCombinations;
-	
+
 	/**
 	 * The horizontal expense for this experiment
 	 */
 	private float hExpense;
-	
+
 	/**
 	 * The value of <i>k</i> to use for k-cross validation
 	 */
 	private int k;
-	
+
 	/**
 	 * The thread pool executor for learning requests
 	 */
 	private ThreadPoolExecutor learningExecutor;
-	
+
 	/**
 	 * The thread that does progress monitoring of learning tasks completion
 	 */
 	private Thread learningProgressMonitor;
-	
+
 	/**
 	 * The thread that does progress monitoring of learning requests creation
 	 */
 	private Thread learningRequestCreator;
-	
+
 	/**
 	 * The logger for this experiment
 	 */
 	private BasicLogger logger;
-	
+
 	/**
 	 * The number of attributes (except the class attribute) in the unfragmented dataset
 	 */
 	private int numOfAttributes;
-	
+
 	/**
 	 * The number of datasets in queue waiting to be processed
 	 */
 	private volatile long numOfDatasetsInQueue;
-	
+
 	/**
 	 * The number of partitioned datasets ready for creating learning requests
 	 */
@@ -556,17 +562,17 @@ public class PUTExperiment {
 	 * The number of result lines already written to the results file
 	 */
 	private volatile long numOfResultsWrittenToFile;
-	
+
 	/**
 	 * The number of learning requests completed till now
 	 */
 	private volatile long numOfTasksCompleted;
-	
+
 	/**
 	 * The number of learning requests waiting in queue to be processed
 	 */
 	private volatile long numOfTasksInLearningQueue;
-	
+
 	/**
 	 * The thread pool executor for partitioning the dataset
 	 */
@@ -593,6 +599,15 @@ public class PUTExperiment {
 	private Set<Set<Integer>> privacyExceptions;
 
 	/**
+	 * An array of strings representing this experiment's initial state used for recovering from interruptions.
+	 * For CLI invocations, this array contains the passed parameters <i>in order</i> they were provided.
+	 * By default, creating the experiment via {@link #createExperiment(String[])} method makes sure that this is set to a proper value.
+	 * However, if the experiment is created by directly invoking the constructors, the responsibility of setting this lies with the invoker.
+	 * If this is not set before starting the experiment, this experiment cannot be recovered in case of an abrupt failure.
+	 */
+	private String[] recoveryInformation;
+
+	/**
 	 * The result file to which the final statistics will be saved
 	 */
 	private File resultFile;
@@ -601,27 +616,32 @@ public class PUTExperiment {
 	 * A {@link List} to hold {@link Future} results of the learning tasks
 	 */
 	private List<Future<Stats>> results;
-	
+
+	/**
+	 * A recovery manager for this experiment
+	 */
+	private RecoveryManager rm;
+
 	/**
 	 * A {@link List} to hold the statistics related to all the learning tasks
 	 */
 	private List<Stats> stats;
-	
+
 	/**
 	 * Total number of learning tasks this experiment spawns
 	 */
 	private volatile long totalTasks;
-	
+
 	/**
 	 * A set of utility exceptions for the experiment
 	 */
 	private Set<Set<Integer>> utilityExceptions;
-	
+
 	/**
 	 * The vertical expense for this experiment
 	 */
 	private float vExpense;
-	
+
 	/**
 	 * Create a new instance of the Privacy-Utility tradeoff experiment
 	 * @param filePath The path to the (arff) data file
@@ -657,6 +677,8 @@ public class PUTExperiment {
 		availableProcessors = Runtime.getRuntime().availableProcessors();
 		generateRandomCombinations = false;
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
+		datasetsReadyQueue = new ArrayBlockingQueue<Dataset>(DATASET_READY_QUEUE_SIZE);
+		stats = new ArrayList<Stats>();
 	}
 
 	/**
@@ -693,8 +715,10 @@ public class PUTExperiment {
 		this.k = k;
 		availableProcessors = Runtime.getRuntime().availableProcessors();
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
+		datasetsReadyQueue = new ArrayBlockingQueue<Dataset>(DATASET_READY_QUEUE_SIZE);
+		stats = new ArrayList<Stats>();
 	}
-	
+
 	/**
 	 * Add a privacy exception for this experiment
 	 * @param exception A {@link Set} of attribute indices from the original dataset
@@ -766,27 +790,42 @@ public class PUTExperiment {
 	 */
 	private void collectStats() throws InterruptedException, ExecutionException {
 		// Wait for all learning requests to go in queue
+		int index = 0;
 		do {
 			Thread.sleep(500);
 			if(allLearningRequestsInQueue)
 				break;
+			int size = results.size();
+			while(index < size) {
+				Stats stat = results.get(index++).get();
+				stats.add(stat);
+				try {
+					rm.printStats(stat);
+				} catch (IllegalStateException | IOException e) {
+					logger.exception(e);
+					logger.errorln("Error in writing recovery information");
+				}
+			}
 		} while(true);
-		
-		for(Future<Stats> result : results)
-			stats.add(result.get());
-	}
 
+		while(index < results.size()) {
+			Stats stat = results.get(index++).get();
+			stats.add(stat);
+			try {
+				rm.printStats(stat);
+			} catch (IllegalStateException | IOException e) {
+				logger.exception(e);
+				logger.errorln("Error in writing recovery information");
+			}
+		}
+	}
+	
 	/**
 	 * Creates a thread which manages fragmentation of the original dataset into a number of smaller datasets, which are then used for learning
-	 * @param plan A {@link PartitionPlan} to use for partitioning the original dataset
 	 * @throws Exception If the thread managing the fragmentation process runs into a fault during execution
 	 */
-	private void createDatasets(PartitionPlan plan) throws Exception {
+	private void createDatasets() throws Exception {
 		partitioningOn = true;
-		final Set<Set<Integer>> attributePartitions = Partitions.generatePartitions(plan, logger).getPartitions();
-		totalTasks = attributePartitions.size();
-		logger.outln("Number of partitions to generate - " + totalTasks);
-
 		partitioningExecutor = new ThreadPoolExecutor(availableProcessors+1, availableProcessors+1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		for(Set<Integer> partition : attributePartitions) {
 			Runnable datasetPartitioner = new Runnable() {
@@ -836,7 +875,7 @@ public class PUTExperiment {
 		};
 		partitioningProgressMonitor.start();
 	}
-
+	
 	/**
 	 * Creates a thread which manages learning tasks for this experiment
 	 */
@@ -899,6 +938,19 @@ public class PUTExperiment {
 		};
 		learningProgressMonitor.start();
 	}
+	
+	/**
+	 * Generates the paritions according to a given {@link PartitionPlan}
+	 * @param plan The partition plan to use
+	 * @throws Exception If something goes wrong while generating the partitions or writing them to the recovery file
+	 */
+	private void generatePartitions(PartitionPlan plan) throws Exception {
+		attributePartitions = Partitions.generatePartitions(plan, logger).getPartitions();
+		totalTasks = attributePartitions.size();
+		logger.outln("Number of partitions to generate - " + totalTasks);
+		writePartitionsForRecovery(plan.isGenerateRandomly());
+//		writePartitionsForRecoveryTest(plan.isGenerateRandomly());
+	}
 
 	/**
 	 * A <i>status indicator</i> while the experiment is running - The number of datasets in queue waiting to be processed
@@ -909,7 +961,7 @@ public class PUTExperiment {
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return numOfDatasetsInQueue;
 	}
-
+	
 	/**
 	 * A <i>status indicator</i> while the experiment is running - The number of partitioned datasets ready for creating learning requests
 	 * @return number of partitioned datasets
@@ -919,7 +971,7 @@ public class PUTExperiment {
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return numOfPartitionedDatasets;
 	}
-
+	
 	/**
 	 * A <i>status indicator</i> while the results of the experiment are being written to the result file - The number of data items already written
 	 * @return number of lines written in the result file
@@ -929,7 +981,7 @@ public class PUTExperiment {
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return numOfResultsWrittenToFile;
 	}
-
+	
 	/**
 	 * A <i>status indicator</i> while the experiment is running - The number of learning requests completed till now
 	 * @return number of learning requests completed
@@ -939,7 +991,7 @@ public class PUTExperiment {
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return numOfTasksCompleted;
 	}
-
+	
 	/**
 	 * A <i>status indicator</i> while the experiment is running - The number of learning requests waiting in queue to be processed
 	 * @return number of learning requests waiting in queue
@@ -948,6 +1000,14 @@ public class PUTExperiment {
 		if(numOfTasksInLearningQueue == Long.MIN_VALUE)
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return numOfTasksInLearningQueue;
+	}
+
+	/**
+	 *  If set, returns the required recovery information for the initial state of this experiment. Otherwise, returns <code>null</code>
+	 * @return the recoveryInformation An array of recovery information
+	 */
+	public String[] getRecoveryInformation() {
+		return recoveryInformation;
 	}
 
 	/**
@@ -967,6 +1027,33 @@ public class PUTExperiment {
 		if(totalTasks == Long.MIN_VALUE)
 			throw new IllegalStateException("The experiment is either not running or this data is currently not available");
 		return totalTasks;
+	}
+
+	/**
+	 * Initiates recovery tasks for this experiment. This includes creation of a recovery file and printing header (recovery) information.
+	 */
+	private void initiateRecoveryTasks() {
+		// Recovery Tasks
+		try {
+			String recoveryFileName = resultFile.getName();
+			if(recoveryFileName.contains("."))
+				recoveryFileName = recoveryFileName.substring(0, recoveryFileName.lastIndexOf(".")) + "_recovery.putr";
+			else
+				recoveryFileName = recoveryFileName + "_recovery.putr";
+			File recoveryFile = new File(resultFile.getParent(), recoveryFileName);
+			rm = new RecoveryManager(recoveryFile);
+			logger.outln("Recovery File: " + recoveryFile.getAbsolutePath());
+			logger.outln("If the experiment gets terminated prematurely, use this recovery file to resume from the last saved state.");
+			rm.printHeader(recoveryInformation);
+		} catch (FileNotFoundException e) {
+			logger.exception(e);
+			logger.outln("Could not create a recovery file for this experiment");
+			rm = null;
+		} catch (IOException e) {
+			logger.exception(e);
+			logger.outln("Error in writing recovery file for this experiment");
+			rm = null;
+		}
 	}
 
 	/**
@@ -1034,6 +1121,128 @@ public class PUTExperiment {
 	}
 
 	/**
+	 * Resumes the current experiment after the partition generation stage.
+	 * This method is supposed to be invoked from the {@link RecoveryManager}.
+	 * @param partitions The generated partitions to use
+	 * @param existingStats Any stats that are already collected
+	 * @param isRandomlyGenerated If <code>true</code>, signifies that the partitions were generated in random order, 
+	 * <code>false</code> signifies that the partitions were generated in dictionary order 
+	 */
+	public void resumeExperimentAfterGenerationStage(Set<Set<Integer>> partitions, List<Stats> existingStats, boolean isRandomlyGenerated) {
+		seed = 1;
+
+		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = Long.MIN_VALUE;
+		
+		initiateRecoveryTasks();
+		
+		if (partitions.size() > existingStats.size()) {
+			logger.outln("Resuming the experiment after the partition generation stage");
+			logger.outln("Total tasks in the experiment: " + partitions.size());
+			logger.outln("Number of completed tasks recovered: " + existingStats.size());
+			logger.outln("Number of tasks remaining: " + (partitions.size() - existingStats.size()));
+			try {
+				// Remove the partitions whose results are already collected,
+				// write these stats to the new recovery file and
+				// add them to the collected stats
+				
+				for(Stats s : existingStats)
+					partitions.remove(s.getPartition());
+				attributePartitions = partitions;
+				writePartitionsForRecovery(isRandomlyGenerated);
+				for(Stats s : existingStats) {
+					rm.printStats(s);
+					stats.add(s);
+				}
+				createDatasets();
+			} catch (Exception e) {
+				logger.errorln(
+						"Fatal Error - problem in resuming experiment, could not create partitioned datasets. Exiting.");
+				logger.exception(e);
+				System.exit(-1);
+			}
+			// Create learning requests
+			results = Collections.synchronizedList(new ArrayList<Future<Stats>>());
+			createLearningRequests();
+			// Collect results and stats
+			try {
+				stats = new ArrayList<Stats>();
+				collectStats();
+			} catch (InterruptedException | ExecutionException e) {
+				logger.errorln("Fatal Error - problem in collecting learning statistics");
+				logger.exception(e);
+				System.exit(-1);
+			} 
+		} else {
+			// Just write the stats properly to the result file
+			logger.outln("All learning tasks recovered, saving results !!");
+			stats = existingStats;
+		}
+		
+		// Sort the results according to accuracy
+		Stats.sortList(stats, Stats.ACCURACY, true, null);
+
+		writeResultsToFile();
+	}
+
+	/**
+	 * Resumes the current experiment from the partition generation stage.
+	 * If the partitions were generated via random generation method, any partitions that were recovered can be reused.
+	 * @param numberOfCombinationsToGenerate
+	 * @param recoveredPartitions The set of partitions recovered from the recovery file
+	 * @param isRandomlyGenerated If <code>true</code>, signifies that the partitions were generated in random order, 
+	 * <code>false</code> signifies that the partitions were generated in dictionary order 
+	 */
+	public void resumeExperimentFromGenerationStage(int numberOfCombinationsToGenerate, Set<Set<Integer>> recoveredPartitions, boolean isRandomlyGenerated) {
+		seed = 1;
+
+		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = Long.MIN_VALUE;
+		
+		initiateRecoveryTasks();
+		
+		logger.outln("Resuming the experiment from the partition generation stage");
+		
+		try {
+			if(isRandomlyGenerated) {	// Use the already generated partitions
+				logger.outln("The experiment was using random generation method");
+				logger.outln("Reusing " + recoveredPartitions.size() + " recovered partitions");
+				logger.outln("Generating remaining " + (numberOfCombinationsToGenerate - recoveredPartitions.size()) + " partitions");
+				attributePartitions = RandomCombinationGenerator.generateRandomCombinations(numOfAttributes, partitionSize, numberOfCombinationsToGenerate, privacyExceptions, recoveredPartitions);
+				logger.outln("Total number of partitions generated:" + attributePartitions.size());
+				totalTasks = attributePartitions.size();
+				writePartitionsForRecovery(true);
+				createDatasets();
+			} else {	// Just restart it.. nothing much can be done !
+				logger.outln("The experiment was using dictionary order generation method, restarting the experiment !!");
+				startExperiment();
+				return;
+			}
+		} catch (Exception e) {
+			logger.errorln("Fatal Error - problem in resuming experiment, could not create partitioned datasets. Exiting.");
+			logger.exception(e);
+			System.exit(-1);
+		}
+		
+		// Create learning requests
+		results = Collections.synchronizedList(new ArrayList<Future<Stats>>());
+		createLearningRequests();
+
+		// Collect results and stats
+		try {
+			stats = new ArrayList<Stats>();
+			collectStats();
+		} catch (InterruptedException | ExecutionException e) {
+			logger.errorln("Fatal Error - problem in collecting learning statistics");
+			logger.exception(e);
+			System.exit(-1);
+		}
+
+		// Sort the results according to accuracy
+		Stats.sortList(stats, Stats.ACCURACY, true, null);
+
+		writeResultsToFile();
+	}
+
+	/**
 	 * Runs a set of compatibility tests to check current experiment configurations.<br/>
 	 * This method can be used to perform any checks over the dataset and parameters, before starting the experiment.<br/>
 	 * The method is <b>not</b> invoked implicitly, and must be called explicitly before starting the experiment.
@@ -1058,20 +1267,20 @@ public class PUTExperiment {
 		} catch(UnassignedClassException e) {
 			return "No class attribute in the dataset";
 		}
-		
+
 		/*
 		 * 2. Check if the class is nominal or not
 		 */
 		if(!classAttribute.isNominal())
 			return "The class attribute must be nominal";
-		
-		
+
+
 		/*
 		 * ##########################################################
 		 * 				Parameter specific tests below
 		 * ##########################################################
 		 */
-		
+
 		/*
 		 * 3. Check that the number of combinations to generate are not "too many"
 		 */
@@ -1081,16 +1290,16 @@ public class PUTExperiment {
 		if(numberOfCombinationsToGenerate.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0) {
 			return "Too many partitons to generate: " + numberOfCombinationsToGenerate;
 		}
-		
+
 		/*
 		 * 4. If the selected classifier is SGD, make sure that the dataset is not multi-class
 		 */
 		if(classifierType.equals(SGD.class) && classAttribute.numValues() > 2)
 			return "The selected classifier SGD, does not support multi-class datasets";
-			
+
 		return null;
 	}
-	
+
 	/**
 	 * Sets the options to be passed on to the Weka classifier
 	 * @see AbstractClassifier#setOptions(String[])
@@ -1127,7 +1336,15 @@ public class PUTExperiment {
 			this.resultFile = resultFile; 
 		} 
 	}
-	
+
+	/**
+	 * Sets the recovery information for the intial state of this experiment.
+	 * @param recoveryInformation An array of recovery information to set
+	 */
+	public void setRecoveryInformation(String[] recoveryInformation) {
+		this.recoveryInformation = recoveryInformation;
+	}
+
 	/**
 	 * Starts the experiment with the set parameters.<br/>
 	 * All important activities are logged by a logger (by default, to standard output and error streams).<br/>
@@ -1138,17 +1355,19 @@ public class PUTExperiment {
 	private void startExperiment() {
 
 		seed = 1;
-		
+
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = Long.MIN_VALUE;
-		
+
+		initiateRecoveryTasks();
+
 		// Create partitioned datasets
 		try {
 			PartitionPlan plan = new PartitionPlan(numOfAttributes, partitionSize, vExpense);
 			plan.setGenerateRandomly(generateRandomCombinations);
 			plan.setPrivacyExceptions(privacyExceptions);
 			plan.setUtilityExceptions(utilityExceptions);
-			datasetsReadyQueue = new ArrayBlockingQueue<Dataset>(datasetsReadyQueueSize);
-			createDatasets(plan);
+			generatePartitions(plan);
+			createDatasets();
 		} catch (Exception e) {
 			if(!asyncExecution) {
 				logger.errorln("Fatal Error - problem in creating partitioned datasets. Exiting.");
@@ -1163,7 +1382,6 @@ public class PUTExperiment {
 
 		// Collect results and stats
 		try {
-			stats = new ArrayList<Stats>();
 			collectStats();
 		} catch (InterruptedException | ExecutionException e) {
 			if(!asyncExecution) {
@@ -1175,7 +1393,74 @@ public class PUTExperiment {
 
 		// Sort the results according to accuracy
 		Stats.sortList(stats, Stats.ACCURACY, true, null);
-		
+
+		writeResultsToFile();
+	}
+
+	/**
+	 * Starts this experiment in asynchronous mode (in a different thread) and returns immediately
+	 */
+	public void startExperimentAsync() {
+		asyncThread = new Thread() {
+			public void run() {
+				startExperiment();
+			}
+		};
+		asyncExecution = true;
+		asyncThread.start();
+	}
+
+	/**
+	 * Starts this experiment in synchronous mode (in the same thread) and blocks till the experiment completes
+	 */
+	public void startExperimentSync() {
+		asyncExecution = false;
+		asyncThread = null;
+		startExperiment();
+	}
+	
+	/**
+	 * Aborts this experiment, if it is running
+	 */
+	public void stopExperiment() {
+		if(learningExecutor != null)
+			learningExecutor.shutdownNow();
+
+		if(partitioningExecutor != null)
+			partitioningExecutor.shutdownNow();
+
+		if(partitioningProgressMonitor != null)
+			partitioningProgressMonitor.interrupt();
+
+		if(learningRequestCreator != null)
+			learningRequestCreator.interrupt();
+
+		if(learningProgressMonitor != null)
+			learningProgressMonitor.interrupt();
+
+		if(asyncThread != null)
+			asyncThread.interrupt();
+	}
+
+	/**
+	 * Write the generated partitions to the recovery file
+	 * @param isRandomlyGenerated <code>true</code> if the random generation method was used, <code>flase</code> otherwise
+	 * @throws IOException If something goes wrong while trying to write the partitions
+	 */
+	private void writePartitionsForRecovery(boolean isRandomlyGenerated) throws IOException {
+		// Recovery Tasks
+		if(rm != null) {
+			rm.printPartitionsMetadata(attributePartitions.size(), isRandomlyGenerated);
+			for(Set<Integer> partition : attributePartitions) {
+				rm.printPartition(partition);
+			}
+		}
+	}
+
+	/**
+	 * Writes the collected stats to the result file and deletes the recovery file
+	 */
+	private void writeResultsToFile() {
 		numOfResultsWrittenToFile = 0;
 		// Write it to results file
 		try {
@@ -1210,65 +1495,22 @@ public class PUTExperiment {
 			for(Object classValue : allClasses)
 				writer.print(", aPRC_" + classValue);
 			writer.println();
-			
+
 			for(Stats stat : stats) {
 				writer.println(stat);
 				numOfResultsWrittenToFile++;
 			}
 			writer.close();
+			if(rm != null)
+				rm.deleteRecoveryFile();
 		} catch (IOException e) {
 			if(!asyncExecution) {
 				logger.errorln("Fatal Error - problem in writing output file");
 				logger.exception(e);
 				System.exit(-1);
 			}
-			
+
 		}
-	}
-	
-	/**
-	 * Starts this experiment in asynchronous mode (in a different thread) and returns immediately
-	 */
-	public void startExperimentAsync() {
-		asyncThread = new Thread() {
-			public void run() {
-				startExperiment();
-			}
-		};
-		asyncExecution = true;
-		asyncThread.start();
-	}
-	
-	/**
-	 * Starts this experiment in synchronous mode (in the same thread) and blocks till the experiment completes
-	 */
-	public void startExperimentSync() {
-		asyncExecution = false;
-		asyncThread = null;
-		startExperiment();
-	}
-	
-	/**
-	 * Aborts this experiment, if it is running
-	 */
-	public void stopExperiment() {
-		if(learningExecutor != null)
-			learningExecutor.shutdownNow();
-		
-		if(partitioningExecutor != null)
-			partitioningExecutor.shutdownNow();
-		
-		if(partitioningProgressMonitor != null)
-			partitioningProgressMonitor.interrupt();
-		
-		if(learningRequestCreator != null)
-			learningRequestCreator.interrupt();
-		
-		if(learningProgressMonitor != null)
-			learningProgressMonitor.interrupt();
-		
-		if(asyncThread != null)
-			asyncThread.interrupt();
 	}
 
 }

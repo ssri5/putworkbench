@@ -4,8 +4,8 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 
 ### What is this repository for? ###
 
-* The Privacy-Utility Tradeoff Workbench is a small tool that can be used for infering important co-relations among the various attributes in a domain. If due to any reasons, the architects are unwilling to use the all the parameters in a dataset for learning purposes, and are willing to try out a small subset of them for any practical ML application, this tool can help them find co-relations which in turn can help in choosing a right set of attributes for large scale usage (the tool has been built using "privacy" as the key reason, but there can be other reasons too).
-* (Current) Version: 1.32 (Build Date: 26-Feb-2018)
+* The Privacy-Utility Tradeoff Workbench is a small tool that can be used for inferring important correlations among the various attributes in a domain. If due to any reasons, the architects are unwilling to use the all the parameters in a dataset for learning purposes, and are willing to try out a small subset of them for any practical ML application, this tool can help them find correlations which in turn can help in choosing a right set of attributes for large scale usage (the tool has been built using "privacy" as the key reason, but there can be other reasons too).
+* (Current) Version: 1.4 (Build Date: 19-Mar-2018)
 
 ### How do I get set up? ###
 
