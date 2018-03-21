@@ -102,6 +102,11 @@ public class PUTExperiment {
 	private static final int DATASET_READY_QUEUE_SIZE = 1000;
 
 	/**
+	 * Default name for the output file
+	 */
+	public static final String DEFAULT_OUTPUT_FILE_NAME = "results.csv";
+
+	/**
 	 * Switch for the method to handle duplicate rows
 	 */
 	public static final String DUPLICATE_ROWS_SWITCH = "-dr";
@@ -139,8 +144,8 @@ public class PUTExperiment {
 	/**
 	 * Switch for providing the privacy exceptions
 	 */
-	public static final String PRIVACY_EXCEPTIONS_SWITCH = "-pex";
-
+	public static final String PRIVACY_EXCEPTIONS_SWITCH = "-pex"; 
+	
 	/**
 	 * Switch for providing the put number
 	 */
@@ -672,7 +677,7 @@ public class PUTExperiment {
 		this.logger = logger;
 		privacyExceptions = new TreeSet<Set<Integer>>(ATTRIBUTE_SET_COMPARATOR);
 		utilityExceptions = new TreeSet<Set<Integer>>(ATTRIBUTE_SET_COMPARATOR);
-		resultFile = new File(dataFile.getParent(), "results.csv");
+		resultFile = new File(dataFile.getParent(), DEFAULT_OUTPUT_FILE_NAME);
 		this.k = k;
 		availableProcessors = Runtime.getRuntime().availableProcessors();
 		generateRandomCombinations = false;
@@ -711,7 +716,7 @@ public class PUTExperiment {
 		this.logger = logger;
 		privacyExceptions = new TreeSet<Set<Integer>>(ATTRIBUTE_SET_COMPARATOR);
 		utilityExceptions = new TreeSet<Set<Integer>>(ATTRIBUTE_SET_COMPARATOR);
-		resultFile = new File(dataFile.getParent(), "results.csv");
+		resultFile = new File(dataFile.getParent(), DEFAULT_OUTPUT_FILE_NAME);
 		this.k = k;
 		availableProcessors = Runtime.getRuntime().availableProcessors();
 		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
