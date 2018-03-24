@@ -14,10 +14,9 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 * If you are using __Linux__ or any other Unix based system such as __Mac__, you may wish to add some aliases to point to these jars. For example, assuming that you've put the jar files in the _PUTWorkbench_ directory which in turn is located in your _$HOME_ directory, you may add the following lines to your _.bashrc_ or _.profile_ file:
 
   \# set alias for PUTWorkbench  
-  alias putwb='java -jar $HOME/Programs/privacyws/putwb/target/putwb-cli-${project.version}.jar'  
-  alias putwb-ui='java -jar $HOME/PUTWorkbench/putwb-ui-${project.version}.jar'  
-  alias putwb-rec='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'
-
+  alias putwb='java -jar $HOME/putworkbench-maven/target/putwb-cli-1.41.jar'  
+  alias putwb-ui='java -jar $HOME/putworkbench-maven/target/putwb-ui-1.41.jar'  
+  alias putwb-rec='java -cp $HOME/putworkbench-maven/target/putwb-cli-1.41.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'  
   You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__.
   
 * If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:
