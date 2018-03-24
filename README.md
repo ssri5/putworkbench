@@ -15,8 +15,8 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 
   \# set alias for PUTWorkbench  
   alias putwb='java -jar $HOME/putworkbench-maven/target/putwb-cli-1.41.jar'  
-  alias putwb-ui='java -jar $HOME/putworkbench-maven/putwb-ui-1.41.jar'  
-  alias putwb-rec='java -cp $HOME/putworkbench-maven/putwb-cli-1.41.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'
+  alias putwb-ui='java -jar $HOME/putworkbench-maven/target/putwb-ui-1.41.jar'  
+  alias putwb-rec='java -cp $HOME/putworkbench-maven/target/putwb-cli-1.41.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'
 
   You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__.
   
