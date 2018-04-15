@@ -16,9 +16,10 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
   \# set alias for PUTWorkbench  
   alias putwb='java -jar $HOME/Programs/privacyws/putwb/target/putwb-cli-${project.version}.jar'  
   alias putwb-ui='java -jar $HOME/PUTWorkbench/putwb-ui-${project.version}.jar'  
-  alias putwb-rec='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'
+  alias putwb-rec='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'  
+  alias putwb-ver='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.Verifier'
 
-  You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__.
+  You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__. Version 1.5 onwards, there is a Verifier CLI tool as well, to verify (sub)sets of results of an experiment over a different size of the original dataset. The tool can be accessed by the __putwb-ver__ command, if configured the way shown above. 
   
 * If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:
 https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git

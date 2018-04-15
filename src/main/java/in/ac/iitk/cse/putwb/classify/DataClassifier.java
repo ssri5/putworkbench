@@ -274,10 +274,10 @@ public class DataClassifier {
 	}
 	
 	/**
-	 * Returns the area under the PRC values (for every class individually) of the given model upon <i>k-fold cross validation</i> evaluation
-	 * @return an array of area under the PRC values, corresponding to all classes in the dataset
+	 * Returns the area under the PR Curve values (for every class individually) of the given model upon <i>k-fold cross validation</i> evaluation
+	 * @return an array of area under the PR Curve values, corresponding to all classes in the dataset
 	 */
-	public double[] getPRC() {
+	public double[] getPR() {
 		double[] results = new double[dataset.getNumOfClasses()];
 		if(eval != null) {
 			for(int i = 0; i < results.length; i++)
@@ -316,8 +316,8 @@ public class DataClassifier {
 	}
 
 	/**
-	 * Returns the area under the ROC values (for every class individually) of the given model upon <i>k-fold cross validation</i> evaluation
-	 * @return an array of area under the ROC values, corresponding to all classes in the dataset
+	 * Returns the area under the ROC Curve values (for every class individually) of the given model upon <i>k-fold cross validation</i> evaluation
+	 * @return an array of area under the ROC Curve values, corresponding to all classes in the dataset
 	 */
 	public double[] getROC() {
 		double[] results = new double[dataset.getNumOfClasses()];

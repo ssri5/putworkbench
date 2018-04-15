@@ -99,8 +99,8 @@ public class PUTExperiment {
 	 * This is important as the memory available may no longer be enough to hold too many datasets simultaneously.<br/>
 	 * If the memory available to the JVM is significantly restricted, reduce this number.
 	 */
-	private static final int DATASET_READY_QUEUE_SIZE = 1000;
-
+	private static final int DATASET_READY_QUEUE_SIZE = 100;
+	
 	/**
 	 * Default name for the output file
 	 */
@@ -125,6 +125,13 @@ public class PUTExperiment {
 	 * Switch for providing the value of <i>k</i> for k-cross validation 
 	 */
 	public static final String K_CROSS_SWITCH = "-k";
+
+	/**
+	 * Maximum number of learning requests that can wait in the queue.<br/>
+	 * This is important as the memory available may no longer be enough to hold too many learning requests simultaneously.<br/>
+	 * If the memory available to the JVM is significantly restricted, reduce this number.
+	 */
+	private static final int LEARNING_REQUEST_QUEUE_SIZE = 100;
 
 	/**
 	 * Switch for the method to handle missing values
@@ -337,7 +344,7 @@ public class PUTExperiment {
 	}
 
 	/**
-	 * A utility method, that takes an unfragemented dataset, a partition of its attribute indices, and returns the dataset, 
+	 * A utility method, that takes an unfragmented dataset, a partition of its attribute indices, and returns the dataset, 
 	 * with reduced number of rows, if required, according to a given proportion
 	 * @param original The original dataset to fragment
 	 * @param partition A set of attribute indices from the original dataset to include in the partition
@@ -397,8 +404,7 @@ public class PUTExperiment {
 		}
 		PUTExperiment experiment = createExperiment(args);
 		if(experiment == null) {
-			defaultLogger.errorln("Problems in creating experiment. Printing usage details:");
-			printUsageDetails();
+			defaultLogger.errorln("Problems in creating experiment. To see usage details, invoke without any arguments");
 			System.exit(-1);
 		}
 		defaultLogger.outln("Running compatibility tests");
@@ -447,7 +453,7 @@ public class PUTExperiment {
 				"\n\t Examples:" + 
 				" \n\t " + UTILITY_EXCEPTIONS_SWITCH + " {[1,4,6],[2,4,5],[3,1]}" +
 				" \n\t " + UTILITY_EXCEPTIONS_SWITCH + " \"{[1, 4], [2, 5]}\"");
-		System.out.println(OUTPUT_FILE_SWITCH + "\t (Default: A file named \"results.csv\" in the folder of the data file) The output file, e.g. " + OUTPUT_FILE_SWITCH + " out.txt");
+		System.out.println(OUTPUT_FILE_SWITCH + "\t (Default: A file named \"results.csv\" in the folder of the data file) The output file, e.g. " + OUTPUT_FILE_SWITCH + " out.csv");
 		System.out.println(CLASSIFIER_OPTIONS_SWITCH + "\t Any custom options for the Weka Classifier to use in the form {option1,option2...}." + 
 				"\n\t These options are passed \"as provided\" to the classifier's setOptions() method. Refer to the documentation of respective classifers for details." + 
 				"\n\t To avoid problems in setting options with space, include the full string within quotes." + 
@@ -483,30 +489,30 @@ public class PUTExperiment {
 	/**
 	 * Contains the partitions being used by this experiment
 	 */
-	private Set<Set<Integer>> attributePartitions = null;
+	protected Set<Set<Integer>> attributePartitions = null;
 
 	/**
 	 * The number of processors available for use on the machine over which the experiment is being run
 	 */
-	private int availableProcessors;
+	protected int availableProcessors;
 
 	/**
 	 * Any custom options to be set for the use of the Weka classifier.
 	 * These are passed on directly to the <code>setOptions(String[])</code> method of the classifier for processing.
 	 * @see AbstractClassifier#setOptions(String[]) 
 	 */
-	private String[] classifierOptions;
+	protected String[] classifierOptions;
 
 	/**
 	 * The classifier type to use for this experiment.<br/> 
 	 * The allowed types could be one of the pre-defined constants.
 	 */
-	private Class<? extends AbstractClassifier> classifierType;
+	protected Class<? extends AbstractClassifier> classifierType;
 
 	/**
 	 * The original, unfragmented dataset, over which the experiment is designed
 	 */
-	private Instances dataset;
+	protected Instances dataset;
 
 	/**
 	 * A queue to keep fragmented datasets, ready to be used for classification tasks
@@ -516,17 +522,17 @@ public class PUTExperiment {
 	/**
 	 * Use random combinations instead of systematic generation and pruning
 	 */
-	private boolean generateRandomCombinations;
+	protected boolean generateRandomCombinations;
 
 	/**
 	 * The horizontal expense for this experiment
 	 */
-	private float hExpense;
+	protected float hExpense;
 
 	/**
 	 * The value of <i>k</i> to use for k-cross validation
 	 */
-	private int k;
+	protected int k;
 
 	/**
 	 * The thread pool executor for learning requests
@@ -546,12 +552,12 @@ public class PUTExperiment {
 	/**
 	 * The logger for this experiment
 	 */
-	private BasicLogger logger;
+	protected BasicLogger logger;
 
 	/**
 	 * The number of attributes (except the class attribute) in the unfragmented dataset
 	 */
-	private int numOfAttributes;
+	protected int numOfAttributes;
 
 	/**
 	 * The number of datasets in queue waiting to be processed
@@ -596,12 +602,12 @@ public class PUTExperiment {
 	/**
 	 * The size of a partition (number of attributes to group together for a learning task)
 	 */
-	private int partitionSize;
+	protected int partitionSize;
 
 	/**
 	 * A set of privcacy exceptions for the experiment
 	 */
-	private Set<Set<Integer>> privacyExceptions;
+	protected Set<Set<Integer>> privacyExceptions;
 
 	/**
 	 * An array of strings representing this experiment's initial state used for recovering from interruptions.
@@ -615,12 +621,12 @@ public class PUTExperiment {
 	/**
 	 * The result file to which the final statistics will be saved
 	 */
-	private File resultFile;
+	protected File resultFile;
 
 	/**
 	 * A {@link List} to hold {@link Future} results of the learning tasks
 	 */
-	private List<Future<Stats>> results;
+	protected List<Future<Stats>> results;
 
 	/**
 	 * A recovery manager for this experiment
@@ -630,7 +636,12 @@ public class PUTExperiment {
 	/**
 	 * A {@link List} to hold the statistics related to all the learning tasks
 	 */
-	private List<Stats> stats;
+	protected List<Stats> stats;
+	
+	/**
+	 * A flag to switch off recovery related actions
+	 */
+	protected boolean switchOffRecovery = false;
 
 	/**
 	 * Total number of learning tasks this experiment spawns
@@ -640,13 +651,25 @@ public class PUTExperiment {
 	/**
 	 * A set of utility exceptions for the experiment
 	 */
-	private Set<Set<Integer>> utilityExceptions;
+	protected Set<Set<Integer>> utilityExceptions;
 
 	/**
 	 * The vertical expense for this experiment
 	 */
-	private float vExpense;
+	protected float vExpense;
 
+	/**
+	 * Added for any classes extending this class, within the same package.<br/>
+	 * WARNING: Using this constructor creates the experiment in an inconsistent state. 
+	 * The calling class needs to make sure that methods are called in a way that doesn't produce errors.
+	 */
+	PUTExperiment() {
+		availableProcessors = Runtime.getRuntime().availableProcessors();
+		totalTasks = numOfPartitionedDatasets = numOfDatasetsInQueue = numOfTasksInLearningQueue = numOfTasksCompleted = numOfResultsWrittenToFile = Long.MIN_VALUE;
+		datasetsReadyQueue = new ArrayBlockingQueue<Dataset>(DATASET_READY_QUEUE_SIZE);
+		stats = new ArrayList<Stats>();
+	}
+	
 	/**
 	 * Create a new instance of the Privacy-Utility tradeoff experiment
 	 * @param filePath The path to the (arff) data file
@@ -656,9 +679,12 @@ public class PUTExperiment {
 	 * @param classifierName The classifier type to use for the experiment
 	 * @param k The value of <i>k</k> for k-cross validation
 	 * @param deleteMissing Indicates whether to delete instances with missing values, or fill values
+	 * @param removeDuplicates Indicates whether to remove duplicate instances or pass them to the classifier
+	 * @param logger A logger for this experiment
 	 * @throws Exception If something goes wrong while creating the experiment
 	 */
-	public PUTExperiment(String filePath, float putNumber, float vExpense, float hExpense, String classifierName, int k, boolean deleteMissing, boolean removeDuplicates, BasicLogger logger) throws Exception {
+	public PUTExperiment(String filePath, float putNumber, float vExpense, float hExpense, String classifierName, int k, 
+			boolean deleteMissing, boolean removeDuplicates, BasicLogger logger) throws Exception {
 		File dataFile = new File(filePath);
 		if(!dataFile.exists())
 			throw new FileNotFoundException("Data file not found - " + filePath);
@@ -695,9 +721,12 @@ public class PUTExperiment {
 	 * @param classifierName The classifier type to use for the experiment
 	 * @param k The value of <i>k</k> for k-cross validation
 	 * @param deleteMissing Indicates whether to delete instances with missing values, or fill values
+	 * @param removeDuplicates Indicates whether to remove duplicate instances or pass them to the classifier
+	 * @param logger A logger for this experiment
 	 * @throws Exception If something goes wrong while creating the experiment
 	 */
-	public PUTExperiment(String filePath, int partitionSize, float vExpense, float hExpense, String classifierName, int k, boolean deleteMissing, boolean removeDuplicates, BasicLogger logger) throws Exception {
+	public PUTExperiment(String filePath, int partitionSize, float vExpense, float hExpense, String classifierName, int k, 
+			boolean deleteMissing, boolean removeDuplicates, BasicLogger logger) throws Exception {
 		File dataFile = new File(filePath);
 		if(!dataFile.exists())
 			throw new FileNotFoundException("Data file not found - " + filePath);
@@ -793,7 +822,7 @@ public class PUTExperiment {
 	 * @throws InterruptedException If the stats collection thread is interrupted
 	 * @throws ExecutionException If a problem is encountered while retrieving the results of a learning task
 	 */
-	private void collectStats() throws InterruptedException, ExecutionException {
+	protected void collectStats() throws InterruptedException, ExecutionException {
 		// Wait for all learning requests to go in queue
 		int index = 0;
 		do {
@@ -805,7 +834,8 @@ public class PUTExperiment {
 				Stats stat = results.get(index++).get();
 				stats.add(stat);
 				try {
-					rm.printStats(stat);
+					if(!switchOffRecovery)
+						rm.printStats(stat);
 				} catch (IllegalStateException | IOException e) {
 					logger.exception(e);
 					logger.errorln("Error in writing recovery information");
@@ -817,7 +847,8 @@ public class PUTExperiment {
 			Stats stat = results.get(index++).get();
 			stats.add(stat);
 			try {
-				rm.printStats(stat);
+				if(!switchOffRecovery)
+					rm.printStats(stat);
 			} catch (IllegalStateException | IOException e) {
 				logger.exception(e);
 				logger.errorln("Error in writing recovery information");
@@ -829,7 +860,7 @@ public class PUTExperiment {
 	 * Creates a thread which manages fragmentation of the original dataset into a number of smaller datasets, which are then used for learning
 	 * @throws Exception If the thread managing the fragmentation process runs into a fault during execution
 	 */
-	private void createDatasets() throws Exception {
+	protected void createDatasets() throws Exception {
 		partitioningOn = true;
 		partitioningExecutor = new ThreadPoolExecutor(availableProcessors+1, availableProcessors+1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		for(Set<Integer> partition : attributePartitions) {
@@ -884,9 +915,10 @@ public class PUTExperiment {
 	/**
 	 * Creates a thread which manages learning tasks for this experiment
 	 */
-	private void createLearningRequests() {
+	protected void createLearningRequests() {
 		allLearningRequestsInQueue = false;
-		learningExecutor = new ThreadPoolExecutor(availableProcessors+1, availableProcessors+1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		LinkedBlockingQueue<Runnable> learningTasksQueue = new LinkedBlockingQueue<Runnable>();
+		learningExecutor = new ThreadPoolExecutor(availableProcessors+1, availableProcessors+1, 0L, TimeUnit.MILLISECONDS, learningTasksQueue);
 		learningRequestCreator = new Thread("Learning Requests Creator") {
 			@Override
 			public void run() {
@@ -899,6 +931,9 @@ public class PUTExperiment {
 							DataClassifier classifier = new DataClassifier(classifierType, dataset, k);
 							classifier.setOptions(classifierOptions);
 							LearningPod pod = new LearningPod(classifier);
+							while(learningTasksQueue.size() >= LEARNING_REQUEST_QUEUE_SIZE)
+								Thread.sleep(100); // Wait for some time before attempting to create another request
+								
 							results.add(learningExecutor.submit(pod));
 						}
 					} catch (InterruptedException e) {
@@ -921,7 +956,7 @@ public class PUTExperiment {
 					numOfTasksCompleted = numOfTasksInLearningQueue = 0;
 					do {
 						numOfTasksCompleted = learningExecutor.getCompletedTaskCount();
-						numOfTasksInLearningQueue = learningExecutor.getQueue().size();
+						numOfTasksInLearningQueue = learningTasksQueue.size();
 
 						String msg1 = "Learning tasks - " + numOfTasksCompleted + " completed till now";
 						String msg2 = "Learning tasks waiting in queue - " + numOfTasksInLearningQueue;
@@ -954,7 +989,6 @@ public class PUTExperiment {
 		totalTasks = attributePartitions.size();
 		logger.outln("Number of partitions to generate - " + totalTasks);
 		writePartitionsForRecovery(plan.isGenerateRandomly());
-//		writePartitionsForRecoveryTest(plan.isGenerateRandomly());
 	}
 
 	/**
@@ -1038,6 +1072,8 @@ public class PUTExperiment {
 	 * Initiates recovery tasks for this experiment. This includes creation of a recovery file and printing header (recovery) information.
 	 */
 	private void initiateRecoveryTasks() {
+		if(switchOffRecovery)
+			return;
 		// Recovery Tasks
 		try {
 			String recoveryFileName = resultFile.getName();
@@ -1065,7 +1101,7 @@ public class PUTExperiment {
 	 * parse the classifier options provided at the commandline in the form {option1,option2...}, to be passed on to the Weka classifier
 	 * @param classifierOptions The options string to parse
 	 */
-	private void parseClassifierOptions(String classifierOptions) {
+	protected void parseClassifierOptions(String classifierOptions) {
 		Pattern p = Pattern.compile("\\{.*\\}");
 		Matcher m = p.matcher(classifierOptions);
 		if(!m.matches())
@@ -1161,7 +1197,7 @@ public class PUTExperiment {
 				createDatasets();
 			} catch (Exception e) {
 				logger.errorln(
-						"Fatal Error - problem in resuming experiment, could not create partitioned datasets. Exiting.");
+						"Fatal Error - problems in resuming experiment, could not create partitioned datasets. Exiting.");
 				logger.exception(e);
 				System.exit(-1);
 			}
@@ -1246,7 +1282,7 @@ public class PUTExperiment {
 
 		writeResultsToFile();
 	}
-
+	
 	/**
 	 * Runs a set of compatibility tests to check current experiment configurations.<br/>
 	 * This method can be used to perform any checks over the dataset and parameters, before starting the experiment.<br/>
@@ -1326,7 +1362,7 @@ public class PUTExperiment {
 	 * Sets the output file for this experiment
 	 * @param fileName The file name
 	 */
-	private void setOutput(String fileName) {
+	protected void setOutput(String fileName) {
 		File resultFile = new File(fileName);
 		if(!resultFile.exists()) {
 			try {
@@ -1453,6 +1489,8 @@ public class PUTExperiment {
 	 * @throws IOException If something goes wrong while trying to write the partitions
 	 */
 	private void writePartitionsForRecovery(boolean isRandomlyGenerated) throws IOException {
+		if(switchOffRecovery)
+			return;
 		// Recovery Tasks
 		if(rm != null) {
 			rm.printPartitionsMetadata(attributePartitions.size(), isRandomlyGenerated);
@@ -1482,8 +1520,8 @@ public class PUTExperiment {
 			 * 3. False Negatives
 			 * 4. Precision
 			 * 5. Recall
-			 * 6. Area under ROC
-			 * 7. Area under PRC
+			 * 6. Area under ROC Curve
+			 * 7. Area under PR Curve
 			 */
 			for(Object classValue : allClasses)
 				writer.print(", TP_" + classValue);
@@ -1498,7 +1536,7 @@ public class PUTExperiment {
 			for(Object classValue : allClasses)
 				writer.print(", aROC_" + classValue);
 			for(Object classValue : allClasses)
-				writer.print(", aPRC_" + classValue);
+				writer.print(", aPR_" + classValue);
 			writer.println();
 
 			for(Stats stat : stats) {
@@ -1506,7 +1544,7 @@ public class PUTExperiment {
 				numOfResultsWrittenToFile++;
 			}
 			writer.close();
-			if(rm != null)
+			if(rm != null && !switchOffRecovery)
 				rm.deleteRecoveryFile();
 		} catch (IOException e) {
 			if(!asyncExecution) {

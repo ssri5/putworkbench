@@ -1,10 +1,17 @@
 package in.ac.iitk.cse.putwb.experiment;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A wrapper class to collect results of a classification task
@@ -31,9 +38,9 @@ public class Stats implements Serializable {
 	public static final short CS_FALSE_POSITIVE = 11;
 	
 	/**
-	 * Constant for (Class specific) Area under PRC
+	 * Constant for (Class specific) Area under PR Curve
 	 */
-	public static final short CS_PRC = 16;
+	public static final short CS_PR = 16;
 	
 	/**
 	 * Constant for (Class specific) Precision
@@ -46,7 +53,7 @@ public class Stats implements Serializable {
 	public static final short CS_RECALL = 14;
 	
 	/**
-	 * Constant for (Class specific) Area under ROC
+	 * Constant for (Class specific) Area under ROC Curve
 	 */
 	public static final short CS_ROC = 15;
 	
@@ -76,7 +83,7 @@ public class Stats implements Serializable {
 			case CS_PRECISION:
 			case CS_RECALL:
 			case CS_ROC:
-			case CS_PRC:
+			case CS_PR:
 				return 1;
 		}
 		return Double.MAX_VALUE;
@@ -90,6 +97,94 @@ public class Stats implements Serializable {
 	public static double getMinimumStatValue(short statType) {
 		// If there is any metric type whose minimum value is other than 0, then a check needs to be placed here
 		return 0;
+	}
+	
+	/**
+	 * Reads the stats file and creates a list of {@link Stats} objects to encapsulate the outcomes of learning tasks
+	 * @param statsFile The file in which the stats of the learning tasks were saved
+	 * @param numOfClasses The number of classes that the result file contains
+	 * @return a {@link List} of {@link Stats} objects, one each for every learning task that was scheduled as a part of the experiment
+	 * @throws FileNotFoundException If the file supplied does not exist
+	 */
+	public static List<Stats> readStatsFile(File statsFile, int numOfClasses) throws FileNotFoundException {
+		if(statsFile == null || !statsFile.exists())
+			throw new IllegalStateException("Cannot read result file - " + statsFile);
+		Scanner s = new Scanner(statsFile);
+		List<Stats> stats = new ArrayList<Stats>();
+		// Ignore the header
+		s.nextLine();
+		while(s.hasNextLine()) {
+			String line = s.nextLine();
+			Pattern p = Pattern.compile("\"(\\[.+\\])\"[\\s]*,(.*)");
+			Matcher m = p.matcher(line);
+			if(m.matches()) {
+				String setStr = m.group(1);
+				Set<Integer> set = new TreeSet<Integer>();
+				String[] tokens = setStr.substring(1, setStr.length()-1).split(",");
+				for(String token : tokens)
+					set.add(Integer.parseInt(token.trim()));
+				Stats stat = new Stats();
+				stat.setPartition(set);
+				
+				String rest = m.group(2);
+				tokens = rest.split(",");
+				/*
+				 * Order:
+				 * 1. Time taken
+				 * 2. Accuracy
+				 * 3. True Positives
+				 * 4. False Positives
+				 * 5. False Negatives
+				 * 6. Precision
+				 * 7. Recall
+				 * 8. Area under ROC Curve
+				 * 9. Area under PR Curve
+				 */
+				stat.setTime((long)(Float.parseFloat(tokens[0].trim()) * 1000000000));
+				stat.setAccuracy(Double.parseDouble(tokens[1].trim()));
+				
+				int index = 2;
+				
+				double[] values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setTp(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setFp(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setFn(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setPrecision(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setRecall(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setRoc(values);
+				
+				values = new double[numOfClasses];
+				for(int i = 0; i < numOfClasses; i++)
+					values[i] = Double.parseDouble(tokens[index++].trim());
+				stat.setPr(values);
+				
+				stats.add(stat);
+			}
+		}
+		s.close();
+		return stats;
 	}
 	
 	/**
@@ -182,12 +277,12 @@ public class Stats implements Serializable {
 				}
 				
 			};
-		} else if(byCriteria == CS_PRC) {
+		} else if(byCriteria == CS_PR) {
 			c = new Comparator<Stats>() {
 				@Override
 				public int compare(Stats o1, Stats o2) {
-					double d1 = o1.getPrc()[classIndex];
-					double d2 = o2.getPrc()[classIndex];
+					double d1 = o1.getPr()[classIndex];
+					double d2 = o2.getPr()[classIndex];
 					return sign * (d1 > d2 ? 1 : (d1 < d2 ? -1 : 0));
 				}
 			};
@@ -217,9 +312,9 @@ public class Stats implements Serializable {
 	private Set<Integer> partition;
 	
 	/**
-	 * The array of area under PRC values achieved by the classification task during k-cross validation
+	 * The array of area under PR Curve values achieved by the classification task during k-cross validation
 	 */
-	private double[] prc;
+	private double[] pr;
 	
 	/**
 	 * The array of precision values achieved by the classification task during k-cross validation
@@ -232,7 +327,7 @@ public class Stats implements Serializable {
 	private double[] recall;
 	
 	/**
-	 * The array of area under ROC values achieved by the classification task during k-cross validation
+	 * The array of area under ROC Curve values achieved by the classification task during k-cross validation
 	 */
 	private double[] roc;
 
@@ -288,11 +383,11 @@ public class Stats implements Serializable {
 	}
 
 	/**
-	 * Returns the area under the PRC values of the classification task
-	 * @return an array of area under the PRC values
+	 * Returns the area under the PR Curve values of the classification task
+	 * @return an array of area under the PR Curve values
 	 */
-	public double[] getPrc() {
-		return prc;
+	public double[] getPr() {
+		return pr;
 	}
 
 	/**
@@ -312,8 +407,8 @@ public class Stats implements Serializable {
 	}
 
 	/**
-	 * Returns the area under the ROC values of the classification task
-	 * @return an array of area under the ROC values
+	 * Returns the area under the ROC Curve values of the classification task
+	 * @return an array of area under the ROC Curve values
 	 */
 	public double[] getRoc() {
 		return roc;
@@ -340,8 +435,8 @@ public class Stats implements Serializable {
 			return recall[classIndex];
 		else if(statType == CS_ROC)
 			return roc[classIndex];
-		else if(statType == CS_PRC)
-			return prc[classIndex];
+		else if(statType == CS_PR)
+			return pr[classIndex];
 		else
 			return -1;
 	}
@@ -395,11 +490,11 @@ public class Stats implements Serializable {
 	}
 
 	/**
-	 * Sets the area under the PRC values of the classification task
-	 * @param recall an array of area under the PRC values to set
+	 * Sets the area under the PR Curve values of the classification task
+	 * @param pr an array of area under the PR Curve values to set
 	 */
-	public void setPrc(double[] prc) {
-		this.prc = prc;
+	public void setPr(double[] pr) {
+		this.pr = pr;
 	}
 
 	/**
@@ -419,8 +514,8 @@ public class Stats implements Serializable {
 	}
 	
 	/**
-	 * Sets the area under the ROC values of the classification task
-	 * @param recall an array of area under the ROC values to set
+	 * Sets the area under the ROC Curve values of the classification task
+	 * @param roc an array of area under the ROC Curve values to set
 	 */
 	public void setRoc(double[] roc) {
 		this.roc = roc;
@@ -457,8 +552,8 @@ public class Stats implements Serializable {
 			 * 3. False Negatives
 			 * 4. Precision
 			 * 5. Recall
-			 * 6. Area under ROC
-			 * 7. Area under PRC
+			 * 6. Area under ROC Curve
+			 * 7. Area under PR Curve
 			 */
 			if(tp != null)
 				for(double val : tp)
@@ -478,8 +573,8 @@ public class Stats implements Serializable {
 			if(roc != null)
 				for(double val : roc)
 					sb.append(", " + val);
-			if(prc != null)
-				for(double val : prc)
+			if(pr != null)
+				for(double val : pr)
 					sb.append(", " + val);
 		}
 		return sb.toString();

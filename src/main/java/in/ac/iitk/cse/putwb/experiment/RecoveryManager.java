@@ -289,8 +289,8 @@ public class RecoveryManager {
 			 * 3. False Negatives
 			 * 4. Precision
 			 * 5. Recall
-			 * 6. Area under ROC
-			 * 7. Area under PRC
+			 * 6. Area under ROC Curve
+			 * 7. Area under PR Curve
 			 */
 			for(Object classValue : allClasses)
 				writer.print(", TP_" + classValue);
@@ -305,7 +305,7 @@ public class RecoveryManager {
 			for(Object classValue : allClasses)
 				writer.print(", aROC_" + classValue);
 			for(Object classValue : allClasses)
-				writer.print(", aPRC_" + classValue);
+				writer.print(", aPR_" + classValue);
 			writer.println();
 			/*
 			 * Write the recovered stats

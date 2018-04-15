@@ -57,7 +57,7 @@ public class LearningPod implements Callable<Stats> {
 		stat.setPrecision(classifier.getPrecision());
 		stat.setRecall(classifier.getRecall());
 		stat.setRoc(classifier.getROC());
-		stat.setPrc(classifier.getPRC());
+		stat.setPr(classifier.getPR());
 		return stat;
 	}
 

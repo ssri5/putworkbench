@@ -24,11 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -100,94 +96,6 @@ public class AnalyzeAction extends Action implements ItemListener {
 	}
 	
 	/**
-	 * Reads the results file and creates a list of {@link Stats} objects to encapsulate the outcomes of learning tasks
-	 * @param resultFile The file in which the results of the learning tasks were saved
-	 * @param numOfClasses The number of classes that the result file contains
-	 * @return a {@link List} of {@link Stats} objects, one each for every learning task that was scheduled as a part of the experiment
-	 * @throws FileNotFoundException If the file supplied does not exist
-	 */
-	private static List<Stats> readResultFile(File resultFile, int numOfClasses) throws FileNotFoundException {
-		if(resultFile == null || !resultFile.exists())
-			throw new IllegalStateException("Cannot read result file - " + resultFile);
-		Scanner s = new Scanner(resultFile);
-		List<Stats> stats = new ArrayList<Stats>();
-		// Ignore the header
-		s.nextLine();
-		while(s.hasNextLine()) {
-			String line = s.nextLine();
-			Pattern p = Pattern.compile("\"(\\[.+\\])\"[\\s]*,(.*)");
-			Matcher m = p.matcher(line);
-			if(m.matches()) {
-				String setStr = m.group(1);
-				Set<Integer> set = new TreeSet<Integer>();
-				String[] tokens = setStr.substring(1, setStr.length()-1).split(",");
-				for(String token : tokens)
-					set.add(Integer.parseInt(token.trim()));
-				Stats stat = new Stats();
-				stat.setPartition(set);
-				
-				String rest = m.group(2);
-				tokens = rest.split(",");
-				/*
-				 * Order:
-				 * 1. Time taken
-				 * 2. Accuracy
-				 * 3. True Positives
-				 * 4. False Positives
-				 * 5. False Negatives
-				 * 6. Precision
-				 * 7. Recall
-				 * 8. Area under ROC
-				 * 9. Area under PRC
-				 */
-				stat.setTime((long)(Float.parseFloat(tokens[0].trim()) * 1000000000));
-				stat.setAccuracy(Double.parseDouble(tokens[1].trim()));
-				
-				int index = 2;
-				
-				double[] values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setTp(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setFp(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setFn(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setPrecision(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setRecall(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setRoc(values);
-				
-				values = new double[numOfClasses];
-				for(int i = 0; i < numOfClasses; i++)
-					values[i] = Double.parseDouble(tokens[index++].trim());
-				stat.setPrc(values);
-				
-				stats.add(stat);
-			}
-		}
-		s.close();
-		return stats;
-	}
-	
-	/**
 	 * A list that holds all the statistics related to the current experiment
 	 */
 	private List<Stats> allStats;
@@ -254,7 +162,7 @@ public class AnalyzeAction extends Action implements ItemListener {
 		this.attributeNames = attributeNames;
 		allStats = null;
 		try {
-			allStats = readResultFile(resultFile, allClasses.size());
+			allStats = Stats.readStatsFile(resultFile, allClasses.size());
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(null, "Cannot open file - " + resultFile.toString(), "Error...", JOptionPane.ERROR);
 			e.printStackTrace();
