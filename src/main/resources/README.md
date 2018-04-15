@@ -1,6 +1,7 @@
 # README #
 
 This repository has the source code for the Privacy-Utility Tradeoff Workbench project. The code is in Java, written over OpenJDK 8 (although it should work with JDK 7 as well).
+Some of the changes we've made in this README are not being formatted as well as we want them to be. We still feel the formatting below is short of being injurious to health though.
 
 ### What is this repository for? ###
 
@@ -20,6 +21,7 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
   alias putwb-ver='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.Verifier'
 
   You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__. Version 1.5 onwards, there is a Verifier CLI tool as well, to verify (sub)sets of results of an experiment over a different size of the original dataset. The tool can be accessed by the __putwb-ver__ command, if configured the way shown above.  
+
 * If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:
 https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git
 
