@@ -12,5 +12,4 @@ pipelines:
           - maven
         script: # Modify the commands below to build your repository.
           - mvn clean install # -B batch mode makes Maven less verbose
-          - ls target/putwb-*.jar
-          - for f in target/putwb-*.jar; do curl -X POST --user "${BB_AUTH_STRING}" "https://api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"target/$f"; done;
+          - for f in target/putwb-*.jar; do curl -X POST --user "${BB_AUTH_STRING}" "https://api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"$f"; done;
