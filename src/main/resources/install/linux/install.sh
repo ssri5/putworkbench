@@ -5,8 +5,8 @@ if [ "$JAVA_VER" -ge 18 ]; then
 	declare -a arr=(
 		"alias putwb-ui='java -jar $INSTALL_DIR/putwb-${project.version}-complete.jar'"
 		"alias putwb='java -cp $INSTALL_DIR/putwb-${project.version}-complete.jar in.ac.iitk.cse.putwb.experiment.PUTExperiment'"
-		"alias putwb-rec='java -cp $INSTALL_DIR/putwb-${project.version}-complete.jarr in.ac.iitk.cse.putwb.experiment.RecoveryManager'"
-		"alias putwb-ver='java -cp $INSTALL_DIR/putwb-${project.version}-complete.jarr in.ac.iitk.cse.putwb.experiment.Verifier'"
+		"alias putwb-rec='java -cp $INSTALL_DIR/putwb-${project.version}-complete.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'"
+		"alias putwb-ver='java -cp $INSTALL_DIR/putwb-${project.version}-complete.jar in.ac.iitk.cse.putwb.experiment.Verifier'"
 	)
 	>~/.putwb_settings
 	for i in "${arr[@]}"
