@@ -62,7 +62,7 @@
   						<goal>copy-resources</goal>
   					</goals>
   					<configuration>
-  						<outputDirectory>${project.basedir}/install/windows</outputDirectory>
+  						<outputDirectory>${project.build.directory}/windows</outputDirectory>
   						<encoding>US-ASCII</encoding>
   						<resources>
   							<resource>
@@ -79,7 +79,7 @@
   						<goal>copy-resources</goal>
   					</goals>
   					<configuration>
-  						<outputDirectory>${project.basedir}/install/linux</outputDirectory>
+  						<outputDirectory>${project.build.directory}/linux</outputDirectory>
   						<resources>
   							<resource>
   								<directory>src/main/resources/install/linux</directory>
@@ -127,20 +127,6 @@
 					<configuration>
 						<target>
 							<delete file="${project.build.directory}/putwb-${project.version}.jar" />
-						</target>
-					</configuration>
-				</execution>
-				<execution>
-					<id>copy-installation-material</id>
-					<phase>install</phase>
-					<goals>
-						<goal>run</goal>
-					</goals>
-					<configuration>
-						<target>
-							<copy todir="${project.build.directory}">
-								<fileset dir="${project.basedir}/install/" />
-							</copy>
 						</target>
 					</configuration>
 				</execution>
