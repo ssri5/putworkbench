@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>in.ac.iitk.cse</groupId>
   <artifactId>putwb</artifactId>
-  <version>1.5</version>
+  <version>1.51</version>
   <name>PUTWorkbench</name>
   <description>A Privacy Utility Trade-off Analysis Tool</description>
   <properties>
@@ -23,6 +23,10 @@
   	<resources>
   		<resource>
   			<directory>src/main/resources</directory>
+  			<excludes>
+  				<!-- Exclude the installation files -->
+  				<exclude>install/**</exclude>
+  			</excludes>
   			<filtering>true</filtering>
   		</resource>
   	</resources>
@@ -51,6 +55,39 @@
   						</resources>
   					</configuration>
   				</execution>
+  				<execution>
+  					<id>win-install-scripts</id>
+  					<phase>process-resources</phase>
+  					<goals>
+  						<goal>copy-resources</goal>
+  					</goals>
+  					<configuration>
+  						<outputDirectory>${project.basedir}/install/windows</outputDirectory>
+  						<encoding>US-ASCII</encoding>
+  						<resources>
+  							<resource>
+  								<directory>src/main/resources/install/windows</directory>
+  								<filtering>true</filtering>
+  							</resource>
+  						</resources>
+  					</configuration>
+  				</execution>
+  				<execution>
+  					<id>linux-install-scripts</id>
+  					<phase>process-resources</phase>
+  					<goals>
+  						<goal>copy-resources</goal>
+  					</goals>
+  					<configuration>
+  						<outputDirectory>${project.basedir}/install/linux</outputDirectory>
+  						<resources>
+  							<resource>
+  								<directory>src/main/resources/install/linux</directory>
+  								<filtering>true</filtering>
+  							</resource>
+  						</resources>
+  					</configuration>
+  				</execution>
   			</executions>
   		</plugin>
 		<plugin>
@@ -59,41 +96,14 @@
 			<version>2.3</version>
 			<executions>
 				<execution>
-					<!-- Build the CLI version -->
+					<!-- Build the tool -->
 					<phase>package</phase>
-					<id>build-cli</id>
+					<id>build</id>
 					<goals>
 						<goal>shade</goal>
 					</goals>
 					<configuration>
-						<filters>
-							<!-- Don't include the UI code -->
-							<filter>
-								<artifact>*:*</artifact>
-								<excludes>in/ac/iitk/cse/putwb/ui/**</excludes>
-							</filter>
-						</filters>
-						<finalName>putwb-cli-${project.version}</finalName>
-						<transformers>
-							<!-- Don't include images -->
-							<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
-								<resource>.png</resource>
-							</transformer>
-							<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-								<mainClass>in.ac.iitk.cse.putwb.experiment.PUTExperiment</mainClass>
-							</transformer>
-						</transformers>
-					</configuration>
-				</execution>
-				<execution>
-					<!-- Build the UI version -->
-					<phase>package</phase>
-					<id>build-ui</id>
-					<goals>
-						<goal>shade</goal>
-					</goals>
-					<configuration>
-					<finalName>putwb-ui-${project.version}</finalName>
+					<finalName>putwb-${project.version}-complete</finalName>
 						<transformers>
 							<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 								<mainClass>in.ac.iitk.cse.putwb.ui.PUTWb</mainClass>
@@ -117,6 +127,52 @@
 					<configuration>
 						<target>
 							<delete file="${project.build.directory}/putwb-${project.version}.jar" />
+						</target>
+					</configuration>
+				</execution>
+				<execution>
+					<id>copy-installation-material</id>
+					<phase>install</phase>
+					<goals>
+						<goal>run</goal>
+					</goals>
+					<configuration>
+						<target>
+							<copy todir="${project.build.directory}">
+								<fileset dir="${project.basedir}/install/" />
+							</copy>
+						</target>
+					</configuration>
+				</execution>
+				<execution>
+					<id>create-installation-packages</id>
+					<phase>install</phase>
+					<goals>
+						<goal>run</goal>
+					</goals>
+					<configuration>
+						<target>
+							<zip destfile="${project.build.directory}/putwb-${project.version}-windows.zip">
+								<zipfileset dir="${project.build.directory}/windows/" prefix="PUTWorkbench/"/>
+								<zipfileset dir="${project.build.directory}" includes="putwb-${project.version}-complete.jar" prefix="PUTWorkbench/"/>
+							</zip>
+							<zip destfile="${project.build.directory}/putwb-${project.version}-linux.zip">
+								<zipfileset dir="${project.build.directory}/linux" prefix="PUTWorkbench/"/>
+								<zipfileset dir="${project.build.directory}" includes="putwb-${project.version}-complete.jar" prefix="PUTWorkbench/"/>
+							</zip>
+						</target>
+					</configuration>
+				</execution>
+				<execution>
+					<id>delete-installation-files</id>
+					<phase>install</phase>
+					<goals>
+						<goal>run</goal>
+					</goals>
+					<configuration>
+						<target>
+							<delete dir="${project.build.directory}/windows/" />
+							<delete dir="${project.build.directory}/linux" />
 						</target>
 					</configuration>
 				</execution>

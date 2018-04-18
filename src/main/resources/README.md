@@ -1,7 +1,6 @@
 # README #
 
 This repository has the source code for the Privacy-Utility Tradeoff Workbench project. The code is in Java, written over OpenJDK 8 (although it should work with JDK 7 as well).
-Some of the changes we've made in this README are not being formatted as well as we want them to be. We still feel the formatting below is short of being injurious to health though.
 
 ### What is this repository for? ###
 
@@ -10,20 +9,17 @@ Some of the changes we've made in this README are not being formatted as well as
 
 ### How do I get set up? ###
 
-* The project is in the form of a Maven project. You can download the source code and build it using the Maven CLI. Use __mvn clean install__ command from the base directory for the same.
-* The build will produce two jars, one each for the CLI and GUI versions of the tool. The jars can be located in the _target_ directory under the base directory. Copy the __putwb-cli-${project.version}.jar__ and __putwb-ui-${project.version}.jar__ files to a convenient location, and preferably add them to your class path.
-* If you are using __Linux__ or any other Unix based system such as __Mac__, you may wish to add some aliases to point to these jars. For example, assuming that you've put the jar files in the _PUTWorkbench_ directory which in turn is located in your _$HOME_ directory, you may add the following lines to your _.bashrc_ or _.profile_ file:
+#### I want to try the tool ####
+* Download the tool for Windows (putwb-${project.version}-windows.zip) or Linux (putwb-${project.version}-linux.zip) from the Downloads section of the repository.  
+* Install a JRE (Java Runtime Environment) if you don't have one already, preferably one for Java 8.
+* Extract the contents of the Zip file to a folder of your choice. The tool doesn't require any installation as such, but there are certain things that an installation script can do for you, like adding the folder to the PATH variable in Windows or creating some aliases in Linux. Open the README file within the zip for more details.
 
-  \# set alias for PUTWorkbench  
-  alias putwb='java -jar $HOME/Programs/privacyws/putwb/target/putwb-cli-${project.version}.jar'  
-  alias putwb-ui='java -jar $HOME/PUTWorkbench/putwb-ui-${project.version}.jar'  
-  alias putwb-rec='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.RecoveryManager'  
-  alias putwb-ver='java -cp $HOME/PUTWorkbench/putwb-cli-${project.version}.jar in.ac.iitk.cse.putwb.experiment.Verifier'
-
-  You can now access the GUI version of the tool with the command __putwb-ui__, the CLI version with the command __putwb__ and the newly added Recovery Manager using the command __putwb-rec__. Version 1.5 onwards, there is a Verifier CLI tool as well, to verify (sub)sets of results of an experiment over a different size of the original dataset. The tool can be accessed by the __putwb-ver__ command, if configured the way shown above.  
-
-* If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:
-https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git
+#### I want to contribute ####
+* The repository is in the form of a Maven project. You can download the source code and build it using the Maven CLI. Use __mvn clean install__ command from the base directory for the same.
+* The build will produce a jar file called __putwb-${project.version}-complete.jar__ (as well as some other files for platform dependent installations).
+* The main classes of interest are __PUTExperiment__ (The CLI tool), __PUTWb__ (The UI tool), __RecoveryManager__ (An auxiliary tool for Recovery Management) and __Verifier__ (An auxiliary tool for results verification).  
+* If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:  
+  https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git  
 
 ### Who do I talk to? ###
 
