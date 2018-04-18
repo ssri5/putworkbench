@@ -172,7 +172,7 @@
 					<configuration>
 						<target>
 							<delete dir="${project.build.directory}/windows/" />
-							<delete dir="${project.build.directory}/linux" />
+							<delete dir="${project.build.directory}/linux/" />
 						</target>
 					</configuration>
 				</execution>
