@@ -13,6 +13,7 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 * Download the tool for Windows (putwb-${project.version}-windows.zip) or Linux (putwb-${project.version}-linux.zip) from the Downloads section of the repository.  
 * Install a JRE (Java Runtime Environment) if you don't have one already, preferably one for Java 8.
 * Extract the contents of the Zip file to a folder of your choice. The tool doesn't require any installation as such, but there are certain things that an installation script can do for you, like adding the folder to the PATH variable in Windows or creating some aliases in Linux. Open the README file within the zip for more details.
+* The UI tool has an **Autopilot** that can select some common settings for you, if you just wish to explore the tool over your dataset.
 
 #### I want to contribute ####
 * The repository is in the form of a Maven project. You can download the source code and build it using the Maven CLI. Use __mvn clean install__ command from the base directory for the same.

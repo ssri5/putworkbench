@@ -57,7 +57,7 @@ public class SelectPrivacySettingsAction extends Action {
 	 * An instance of the {@link ExceptionsEditor} to add utility exceptions
 	 */
 	private ExceptionsEditor utilityExceptionEditor;
-	
+
 	/**
 	 * Creates a privacy settings action with the given selected dataset
 	 * @param dataset The dataset for the experiment
@@ -192,6 +192,14 @@ public class SelectPrivacySettingsAction extends Action {
 	 */
 	public float getPUTNumber() {
 		return putSlider.getCurrentValue();
+	}
+	
+	/**
+	 * Returns the PUT Number slider widget. Used by the Autopilot.
+	 * @return the PUT Number slider widget
+	 */
+	public FloatingSliderPanel getPutSlider() {
+		return putSlider;
 	}
 	
 	/**

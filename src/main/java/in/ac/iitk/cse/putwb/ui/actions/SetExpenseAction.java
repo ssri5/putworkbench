@@ -4,6 +4,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import javax.swing.JLabel;
@@ -40,19 +41,24 @@ public class SetExpenseAction extends Action {
 	private FloatingSliderPanel horizontalExpenseSlider;
 	
 	/**
-	 * The number of data instances in the dataset
-	 */
-	private long numberOfRows;
-	
-	/**
 	 * The number of attributes in the dataset (minus the class attribute)
 	 */
 	private int numOfAttributes;
 	
 	/**
+	 * The number of data instances in the dataset
+	 */
+	private long numOfRows;
+
+	/**
 	 * A link to the current privacy settings action; used to fetch the current value of PUT number
 	 */
 	private SelectPrivacySettingsAction privacyAction;
+
+	/**
+	 * A flag to indicate that warnings be subdued. Used by the autopilot.
+	 */
+	private boolean switchOffWarnings;
 	
 	/**
 	 * The current value of vertical expense
@@ -72,8 +78,7 @@ public class SetExpenseAction extends Action {
 	public SetExpenseAction(Instances dataset, SelectPrivacySettingsAction privacyAction) {
 		this.privacyAction = privacyAction;
 		numOfAttributes = dataset.numAttributes() - 1;
-		numberOfRows = dataset.numInstances();
-		
+		numOfRows = dataset.numInstances();
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[]{1.0};
 		gridBagLayout.rowWeights = new double[]{1.0, 0.0, 1.0};
@@ -145,13 +150,16 @@ public class SetExpenseAction extends Action {
 		horizontalExpenseSlider = new FloatingSliderPanel(0.0f, 1f, DEFAULT_HORIZONTAL_EXPENSE) {
 			protected void setDescriptionLabelText() {
 				float currentValue = getCurrentValue();
-				long numOfRowsInFragmentedDataset = (long) (numberOfRows * currentValue);
+				long numOfRowsInFragmentedDataset = (long) Math.ceil(numOfRows * currentValue);
 				if(numOfRowsInFragmentedDataset == 0) {
-					JOptionPane.showMessageDialog(null, "The number of rows cannot be 0. Resetting to default !!", "Error (0 rows)", JOptionPane.ERROR_MESSAGE);
-					horizontalExpenseSlider.setCurrentValue(DEFAULT_HORIZONTAL_EXPENSE);
+					if(!switchOffWarnings)
+						JOptionPane.showMessageDialog(null, "The number of rows cannot be 0 !!", "Error (0 rows)", JOptionPane.ERROR_MESSAGE);
+					float leastVal = numOfRows == 1 ? 1f : Math.nextUp(1f/numOfRows);
+					horizontalExpenseSlider.setCurrentValue(leastVal);
+					horizontalExpenseSlider.repaint();
 					return;
 				}
-				String text = "Use " + numOfRowsInFragmentedDataset + " rows out of " + numberOfRows;
+				String text = "Use " + numOfRowsInFragmentedDataset + " rows out of " + numOfRows;
 				infoLabel.setText("<html><center><font size='4' color='#2d0c08'>" + text + "</font></center></html>");
 			}
 		};
@@ -171,6 +179,8 @@ public class SetExpenseAction extends Action {
 		gbc_infoLabel4.gridx = 0;
 		gbc_infoLabel4.gridy = 2;
 		horizontalExpensePanel.add(infoLabel4, gbc_infoLabel4);
+		
+		switchOffWarnings = false;
 	}
 	
 	/**
@@ -180,13 +190,29 @@ public class SetExpenseAction extends Action {
 	public float getHorizontalExpense() {
 		return horizontalExpenseSlider.getCurrentValue();
 	}
-	
+
+	/**
+	 * Returns the slider for horizontal expense. Used by the autopilot.
+	 * @return the horizontal expense slider
+	 */
+	public FloatingSliderPanel getHorizontalExpenseSlider() {
+		return horizontalExpenseSlider;
+	}
+
 	/**
 	 * Returns the currently selected value of vertical expense
 	 * @return the vertical expense
 	 */
 	public float getVerticalExpense() {
 		return verticalExpenseSlider.getCurrentValue();
+	}
+	
+	/**
+	 * Returns the slider for vertical expense. Used by the autopilot.
+	 * @return the vertical expense slider
+	 */
+	public FloatingSliderPanel getVerticalExpenseSlider() {
+		return verticalExpenseSlider;
 	}
 	
 	/**
@@ -209,6 +235,14 @@ public class SetExpenseAction extends Action {
 	}
 	
 	/**
+	 * Sets or resets the flag for showing warnings
+	 * @param switchOffWarnings the value to set for the flag
+	 */
+	public void setSwitchOffWarnings(boolean switchOffWarnings) {
+		this.switchOffWarnings = switchOffWarnings;
+	}
+	
+	/**
 	 * Sets up the vertical expense slider
 	 */
 	private void setupVExpenseSlider() {
@@ -220,7 +254,6 @@ public class SetExpenseAction extends Action {
 				infoLabel.setText(setVerticalExpenseInfoLabel(currentValue));
 			}
 		};
-		
 		GridBagConstraints gbc_verticalExpenseSlider = new GridBagConstraints();
 		gbc_verticalExpenseSlider.insets = new Insets(0, 10, 0, 10);
 		gbc_verticalExpenseSlider.fill = GridBagConstraints.BOTH;
@@ -239,14 +272,20 @@ public class SetExpenseAction extends Action {
 	private String setVerticalExpenseInfoLabel(float currentValue) {
 		float putNumber = privacyAction.getPUTNumber();
 		BigInteger totalCombinations = PUTExperiment.getNcKValue(numOfAttributes, PUTExperiment.calculatePartitionSize(numOfAttributes, putNumber));
-		BigInteger numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + currentValue)).toBigInteger();
+		BigInteger numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + currentValue)).setScale(0, RoundingMode.HALF_UP).toBigInteger();
 		if(numberOfCombinations.compareTo(BigInteger.ZERO) == 0) {
-			JOptionPane.showMessageDialog(null, "The number of attribute combinations cannot be 0. Resetting to default !!", "Error (0 combinations)", JOptionPane.ERROR_MESSAGE);
-			verticalExpenseSlider.setCurrentValue(DEFAULT_VERTICAL_EXPENSE);
-			numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + DEFAULT_VERTICAL_EXPENSE)).toBigInteger();
+			if(!switchOffWarnings)
+				JOptionPane.showMessageDialog(null, "The number of attribute combinations cannot be 0 !!", "Error (0 combinations)", JOptionPane.ERROR_MESSAGE);
+			BigDecimal leastVal;
+			if(totalCombinations.equals(BigDecimal.ONE))
+				leastVal = BigDecimal.ONE;
+			else
+				leastVal = BigDecimal.ONE.divide(new BigDecimal(totalCombinations), FloatingSliderPanel.MAX_PRECISION, RoundingMode.HALF_DOWN);
+			numberOfCombinations = new BigDecimal(totalCombinations).multiply(new BigDecimal("" + leastVal)).setScale(0, RoundingMode.HALF_UP).toBigInteger();
+			verticalExpenseSlider.setCurrentValue(Math.nextUp(leastVal.floatValue()));
 		}
 		String text = "Select " + numberOfCombinations + " attribute combinations out of " + totalCombinations + " (without considering any Privacy Exceptions)";
 		return "<html><center><font size='4' color='#2d0c08'>" + text + "</font></center></html>";
 	}
-
+	
 }

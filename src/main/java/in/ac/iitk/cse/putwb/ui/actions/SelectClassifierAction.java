@@ -169,6 +169,14 @@ public class SelectClassifierAction extends Action implements ActionListener {
 	}
 
 	/**
+	 * Returns the Classifier combobox. Used by the autopilot.
+	 * @return the classifierDropdown
+	 */
+	public JComboBox<String> getClassifierDropdown() {
+		return classifierDropdown;
+	}
+
+	/**
 	 * Returns any custom classifier options, if provided
 	 * @return The classifier options (or an empty string), enclosed between parentheses 
 	 */

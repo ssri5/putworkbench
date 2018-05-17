@@ -936,7 +936,7 @@ public class PUTExperiment {
 								
 							results.add(learningExecutor.submit(pod));
 						}
-					} catch (InterruptedException e) {
+					} catch (Exception e) {
 						if(!asyncExecution) {
 							logger.errorln("Fatal Error - problem in creating learning requests. Exiting.");
 							logger.exception(e);

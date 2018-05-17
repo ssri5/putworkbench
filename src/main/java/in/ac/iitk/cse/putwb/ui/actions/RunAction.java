@@ -110,24 +110,29 @@ public class RunAction extends Action implements ActionListener {
 	private JLabel putLabel;
 	
 	/**
+	 * A checkbox to take preference for attribute generation method
+	 */
+	private JCheckBox randomGenerationAdvise;
+	
+	/**
 	 * The file to which the results are stored when the experiment completes
 	 */
 	private File resultFile = null;
+
+	/**
+	 * The button to start the tasks	
+	 */
+	private JButton startTasksButton;
 	
 	/**
 	 * The label to show the currently added utility exceptions
 	 */
 	private JLabel utilityExceptionsLabel;
-
+	
 	/**
 	 * The label to show the currently selected value of vertical expense
 	 */
 	private JLabel verticalExpenseLabel;
-	
-	/**
-	 * A checkbox to take preference for attribute generation method
-	 */
-	private JCheckBox randomGenerationAdvise;
 	
 	/**
 	 * Creates a new instance of Execution action, with links to the other required actions
@@ -478,7 +483,7 @@ public class RunAction extends Action implements ActionListener {
 		gbc_infoLabel11.gridy = 1;
 		otherInputsPanel.add(infoLabel11, gbc_infoLabel11);
 		
-		JButton startTasksButton = new JButton(" Start Tasks ");
+		startTasksButton = new JButton(" Start Tasks ");
 		GridBagConstraints gbc_startTasksButton = new GridBagConstraints();
 		gbc_startTasksButton.fill = GridBagConstraints.VERTICAL;
 		gbc_startTasksButton.insets = new Insets(5, 0, 10, 0);
@@ -489,7 +494,7 @@ public class RunAction extends Action implements ActionListener {
 		
 		setSummary();
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String kText = kTextField.getText();
@@ -613,6 +618,14 @@ public class RunAction extends Action implements ActionListener {
 	 */
 	public File getResultFile() {
 		return resultFile;
+	}
+	
+	/**
+	 * Returns the "Start Tasks" button. Used by the autopilot.
+	 * @return the start tasks Button
+	 */
+	public JButton getStartTasksButton() {
+		return startTasksButton;
 	}
 
 	@Override

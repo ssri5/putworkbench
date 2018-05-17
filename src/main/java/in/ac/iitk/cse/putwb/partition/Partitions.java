@@ -33,7 +33,7 @@ public class Partitions {
 		float expense = plan.getExpense();
 		BigInteger noOfPossibleCombinations = PUTExperiment.getNcKValue(n, k);
 		BigDecimal numberOfCombinationsToGenerate = new BigDecimal(noOfPossibleCombinations);
-		numberOfCombinationsToGenerate = numberOfCombinationsToGenerate.multiply(new BigDecimal("" + expense)).setScale(0, RoundingMode.FLOOR);
+		numberOfCombinationsToGenerate = numberOfCombinationsToGenerate.multiply(new BigDecimal("" + expense)).setScale(0, RoundingMode.CEILING);
 		if(numberOfCombinationsToGenerate.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0) {
 			logger.error("Too many partitons to generate: " + numberOfCombinationsToGenerate);
 			System.exit(1);

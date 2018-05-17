@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>in.ac.iitk.cse</groupId>
   <artifactId>putwb</artifactId>
-  <version>1.51</version>
+  <version>1.6</version>
   <name>PUTWorkbench</name>
   <description>A Privacy Utility Trade-off Analysis Tool</description>
   <properties>

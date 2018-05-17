@@ -3,14 +3,20 @@ package in.ac.iitk.cse.putwb.ui.widgets;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.metal.MetalSliderUI;
 
 /**
  * A slider widget that can select floating point values
@@ -19,6 +25,22 @@ import javax.swing.event.ChangeListener;
  */
 @SuppressWarnings("serial")
 public class FloatingSliderPanel extends JPanel implements ChangeListener {
+	
+	/**
+	 * A class to provide a smoother user interaction for the sliders.
+	 * @author Saurabh Srivastava
+	 *
+	 */
+	private class SmoothSliderUI extends MetalSliderUI {
+		/* (non-Javadoc)
+		 * @see javax.swing.plaf.metal.MetalSliderUI#scrollDueToClickInTrack(int)
+		 */
+		@Override
+		protected void scrollDueToClickInTrack(int dir) {
+			int valueToSet = this.valueForXPosition(slider.getMousePosition().x);
+			slider.setValue(valueToSet);
+		}
+	}
 	
 	/**
 	 * The maximum precision (number of digits after the decimal point) that the slider can provide
@@ -49,12 +71,22 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	 * The multiplier (10 raised to power precision) which is used to convert the floating value to map it to a corresponding integer range
 	 */
 	private int multiplier;
+	
+	/**
+	 * The precision (number of digits after the decimal point) to use for this slider
+	 */
+	private int precision;
 
 	/**
 	 * The bare slider widget - can choose integer values only
 	 */
 	private JSlider slider;
 	
+	/**
+	 * The UI for the current slider
+	 */
+	private SmoothSliderUI sliderUI;
+
 	/**
 	 * Shows the currently selected value
 	 */
@@ -92,6 +124,7 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 		super();
 		if(precision < 0 || precision > MAX_PRECISION)
 			throw new IllegalArgumentException("Precision must be set to a value between 0 and " + MAX_PRECISION);
+		this.precision = precision;
 		multiplier = (int)Math.pow(10, precision);
 		this.min = min;
 		this.max = max;
@@ -118,6 +151,8 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 			slider.setMinorTickSpacing(multiplier/100);
 		slider.addChangeListener(this);
 		
+		sliderUI = new SmoothSliderUI();
+		
 		GridBagConstraints gbc_slider = new GridBagConstraints();
 		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider.insets = new Insets(5, 10, 0, 10);
@@ -142,7 +177,61 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 		gbc_infoLabel.gridy = 2;
 		add(infoLabel, gbc_infoLabel);
 		
+		addCustomizations();
+		
 		setValueLabelText(currentValue);
+	}
+	
+	/**
+	 * Adds the customizations to this slider, such as key actions and a smoother UI
+	 */
+	private void addCustomizations() {
+		final int keyboardChangeQuantum = (int)Math.pow(10, precision/3);
+		/*
+		 * Add "left" and "right" button actions
+		 */
+		Action leftKeyPressed = new AbstractAction() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int val = slider.getValue();
+				if(val == slider.getMinimum())
+					Toolkit.getDefaultToolkit().beep();
+				else {
+					val -= keyboardChangeQuantum;
+					if(val < slider.getMinimum())
+						val = slider.getMinimum();
+					slider.setValue(val);
+				}
+			}
+		};
+		
+		Action rightKeyPressed = new AbstractAction() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int val = slider.getValue();
+				if(val == slider.getMaximum())
+					Toolkit.getDefaultToolkit().beep();
+				else {
+					val += keyboardChangeQuantum;
+					if(val > slider.getMaximum())
+						val = slider.getMaximum();
+					slider.setValue(val);
+				}
+			}
+		};
+		
+		slider.getInputMap().put(KeyStroke.getKeyStroke("LEFT"), "leftKeyAction");
+		slider.getActionMap().put("leftKeyAction", leftKeyPressed);
+		
+		slider.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "rightKeyAction");
+		slider.getActionMap().put("rightKeyAction", rightKeyPressed);
+		
+		/*
+		 * Add better click behaviour
+		 */
+		slider.setUI(sliderUI);
 	}
 	
 	/**
@@ -154,6 +243,14 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 	}
 
 	/**
+	 * Returns the {@link JSlider} widget in this panel. Used by the Autopilot.
+	 * @return the {@link JSlider} widget
+	 */
+	public JSlider getSlider() {
+		return slider;
+	}
+	
+	/**
 	 * Sets a value explicitly for this slider
 	 * @param value The value to set
 	 * @throws IllegalArgumentException if the value is out of range for this slider
@@ -163,7 +260,7 @@ public class FloatingSliderPanel extends JPanel implements ChangeListener {
 			throw new IllegalArgumentException("The value must be between " + min + " and " + max);
 		slider.setValue((int)(value*multiplier));
 		setValueLabelText(value);
-		slider.updateUI();
+		addCustomizations();
 	}
 	
 	/**

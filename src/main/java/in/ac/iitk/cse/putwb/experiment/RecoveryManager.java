@@ -36,7 +36,7 @@ public class RecoveryManager {
 	/**
 	 * Switch for providing the (arff) data file
 	 */
-	public static final String RECOVER_STATS = "-rs";
+	public static final String RECOVER_STATS_SWITCH = "-rs";
 
 	/**
 	 * The main to run the recovery manager
@@ -51,7 +51,7 @@ public class RecoveryManager {
 		boolean recoverStatsOnly = false;
 		String recoveryFileName = null;
 		if(arr.length == 2) {
-			if(arr[0].equals(RECOVER_STATS)) {
+			if(arr[0].compareToIgnoreCase(RECOVER_STATS_SWITCH) == 0) {
 				recoverStatsOnly = true;
 				recoveryFileName = arr[1];
 			}
@@ -82,10 +82,10 @@ public class RecoveryManager {
 	 */
 	public static void printUsageDetails() {
 		System.out.println("---------------------------------------------------------------");
-		System.out.println("  PUTWorkbench RecoveryManager " + PUTExperiment.versionInfo);
+		System.out.println("  PUTWorkbench Recovery Manager " + PUTExperiment.versionInfo);
 		System.out.println("---------------------------------------------------------------");
 		System.out.println("\nUsage options:");
-		System.out.println(RECOVER_STATS + "\t Instructs to only recover the saved stats without resuming the exeriment, e.g. " + RECOVER_STATS + " /home/user/result_recovery.putr");
+		System.out.println(RECOVER_STATS_SWITCH + "\t Instructs to only recover the saved stats without resuming the exeriment, e.g. " + RECOVER_STATS_SWITCH + " /home/user/result_recovery.putr");
 		System.out.println();
 	}
 

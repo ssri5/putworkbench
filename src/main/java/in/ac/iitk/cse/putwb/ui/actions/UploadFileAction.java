@@ -29,6 +29,8 @@ import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
 import in.ac.iitk.cse.putwb.io.DatasetLoader;
 import in.ac.iitk.cse.putwb.ui.ArchiveManager;
 import in.ac.iitk.cse.putwb.ui.IconCreator;
+import in.ac.iitk.cse.putwb.ui.widgets.AutoPilotPreferencesDialog;
+import in.ac.iitk.cse.putwb.ui.widgets.AutopilotButton;
 import weka.core.Instances;
 
 /**
@@ -43,17 +45,32 @@ public class UploadFileAction extends Action {
 	 * The constant for "dataset loaded/reset" property
 	 */
 	public static final String LOADED_DATASET_PROPERTY = "UploadFileAction - loaded dataset";
-	
+
 	/**
 	 * The constant for "experiment loaded/rest" property
 	 */
 	public static final String LOADED_EXPERIMENT_PROPERTY = "UploadFileAction - loaded experiment";
-	
+
+	/**
+	 * The constant for "dataset/experiment loading" property
+	 */
+	public static final String LOADING_DATASET_OR_EXPERIMENT_PROPERTY = "UploadFileAction - loading dataset/experiment";
+
+	/**
+	 * The constant for "starting autopilot" property
+	 */
+	public static final String START_AUTOPILOT_PROPERTY = "UploadFileAction - start autopilot";
+
+	/**
+	 * The button to invoke the autopilot
+	 */
+	private AutopilotButton autoPilotButton;
+
 	/**
 	 * Holds the selected dataset
 	 */
 	private Instances dataset;
-	
+
 	/**
 	 * Holds the preference - whether to delete instance with missing values or not
 	 */
@@ -63,17 +80,17 @@ public class UploadFileAction extends Action {
 	 * The widget to take duplicate rows preferences
 	 */
 	private JCheckBox duplicateInstancesPreference;
-	
+
 	/**
 	 * A label to show the full file path of currently selected dataset
 	 */
 	private JLabel fileLabel;
-	
+
 	/**
 	 * Holds the preference - whether to ignore duplicate instances or not
 	 */
 	private boolean ignoreDuplicateInstances = true;
-	
+
 	/**
 	 * The widget to take missing value preferences
 	 */
@@ -83,22 +100,22 @@ public class UploadFileAction extends Action {
 	 * Points to the currently selected preferences for the last experiment that successfully completed stored in a file, if any
 	 */
 	private File preferencesFile = null;
-	
+
 	/**
 	 * Points to the loaded results file, if there is any
 	 */
 	private File resultsFile;
-	
+
 	/**
 	 * The panel that contain preferences related to data sanitization
 	 */
 	private JPanel sanitizationOptionsPanel;
-	
+
 	/**
 	 * Points to the selected dataset file
 	 */
 	private File selectedFile;
-	
+
 	/**
 	 * Creates an instance of dataset selection action
 	 */
@@ -109,9 +126,9 @@ public class UploadFileAction extends Action {
 		dataset = null;
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 1.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.5, 0.5};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.5, 0.5, 0};
 		setLayout(gridBagLayout);
-		
+
 		JLabel uploadDatasetIconLabel = new JLabel(IconCreator.getIcon(IconCreator.UPLOAD_DATASET_ICON_FILE));
 		uploadDatasetIconLabel.setOpaque(false);
 		GridBagConstraints gbc_uploadDatasetIconLabel = new GridBagConstraints();
@@ -137,7 +154,7 @@ public class UploadFileAction extends Action {
 			}
 		});
 		uploadDatasetIconLabel.setToolTipText("Upload a new ARFF dataset to start an experiment");
-		
+
 		JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
 		GridBagConstraints gbc_separator = new GridBagConstraints();
 		gbc_separator.insets = new Insets(5, 0, 5, 0);
@@ -146,7 +163,7 @@ public class UploadFileAction extends Action {
 		gbc_separator.gridheight = 2;
 		gbc_separator.fill = GridBagConstraints.VERTICAL;
 		add(separator, gbc_separator);
-		
+
 		JLabel uploadExperimentIconLabel = new JLabel(IconCreator.getIcon(IconCreator.UPLOAD_EXPERIMENT_ICON_FILE));
 		uploadExperimentIconLabel.setOpaque(false);
 		GridBagConstraints gbc_uploadExperimentIconLabel = new GridBagConstraints();
@@ -168,7 +185,7 @@ public class UploadFileAction extends Action {
 			}
 		});
 		uploadExperimentIconLabel.setToolTipText("Select a saved experiment file and load it to analyze");
-		
+
 		JLabel displayDatasetTextLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Select a data file for experiment</font></center></html>");
 		GridBagConstraints gbc_displayDatasetTextLabel = new GridBagConstraints();
 		gbc_displayDatasetTextLabel.insets = new Insets(0, 0, 5, 0);
@@ -176,7 +193,7 @@ public class UploadFileAction extends Action {
 		gbc_displayDatasetTextLabel.gridx = 0;
 		gbc_displayDatasetTextLabel.gridy = 1;
 		add(displayDatasetTextLabel, gbc_displayDatasetTextLabel);
-		
+
 		JLabel displayExperimentTextLabel = new JLabel("<html><center><font size='5' color='#033e9e'>Load an existing experiment</font></center></html>");
 		GridBagConstraints gbc_displayExperimentTextLabel = new GridBagConstraints();
 		gbc_displayExperimentTextLabel.insets = new Insets(0, 0, 5, 0);
@@ -184,7 +201,7 @@ public class UploadFileAction extends Action {
 		gbc_displayExperimentTextLabel.gridx = 2;
 		gbc_displayExperimentTextLabel.gridy = 1;
 		add(displayExperimentTextLabel, gbc_displayExperimentTextLabel);
-		
+
 		fileLabel = new JLabel("");
 		GridBagConstraints gbc_fileLabel = new GridBagConstraints();
 		gbc_fileLabel.insets = new Insets(0, 0, 10, 0);
@@ -192,7 +209,7 @@ public class UploadFileAction extends Action {
 		gbc_fileLabel.gridy = 2;
 		gbc_fileLabel.gridwidth = 3;
 		add(fileLabel, gbc_fileLabel);
-		
+
 		sanitizationOptionsPanel = new JPanel();
 		sanitizationOptionsPanel.setOpaque(false);
 		GridBagConstraints gbc_sanitizationOptionsPanel = new GridBagConstraints();
@@ -205,7 +222,7 @@ public class UploadFileAction extends Action {
 		gbl_sanitizationOptionsPanel.columnWeights = new double[]{0.0};
 		gbl_sanitizationOptionsPanel.rowWeights = new double[]{0.0, 0.0};
 		sanitizationOptionsPanel.setLayout(gbl_sanitizationOptionsPanel);
-		
+
 		missingValuePreference = new JCheckBox("Delete instances with missing values, instead of replacing with Mean or Mode");
 		missingValuePreference.setOpaque(false);
 		GridBagConstraints gbc_missingValuePreference = new GridBagConstraints();
@@ -215,14 +232,14 @@ public class UploadFileAction extends Action {
 		gbc_missingValuePreference.gridy = 0;
 		sanitizationOptionsPanel.add(missingValuePreference, gbc_missingValuePreference);
 		missingValuePreference.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				deleteMissingValues = missingValuePreference.isSelected();
 				attemptDatasetLoad();
 			}
 		});
-		
+
 		duplicateInstancesPreference = new JCheckBox("Delete duplicate instances");
 		duplicateInstancesPreference.setSelected(true);
 		duplicateInstancesPreference.setOpaque(false);
@@ -232,28 +249,75 @@ public class UploadFileAction extends Action {
 		gbc_duplicateInstancesPreference.gridy = 1;
 		sanitizationOptionsPanel.add(duplicateInstancesPreference, gbc_duplicateInstancesPreference);
 		duplicateInstancesPreference.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ignoreDuplicateInstances = duplicateInstancesPreference.isSelected();
 				attemptDatasetLoad();
 			}
 		});
+
+		JLabel spacer1 = new JLabel();
+		spacer1.setOpaque(false);
+		GridBagConstraints gbc_spacer1 = new GridBagConstraints();
+		gbc_spacer1.gridx = 4;
+		gbc_spacer1.gridy = 0;
+		gbc_spacer1.fill = GridBagConstraints.BOTH;
+		add(spacer1, gbc_spacer1);
+
+		autoPilotButton = new AutopilotButton();
+		GridBagConstraints gbc_autoPilotButton = new GridBagConstraints();
+		gbc_autoPilotButton.insets = new Insets(10, 0, 10, 0);
+		gbc_autoPilotButton.gridx = 4;
+		gbc_autoPilotButton.gridx = 1;
+		gbc_autoPilotButton.fill = GridBagConstraints.BOTH;
+		gbc_autoPilotButton.anchor = GridBagConstraints.NORTH;
+		add(autoPilotButton, gbc_autoPilotButton);
+		autoPilotButton.addMouseListener(new MouseAdapter() {
+
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				AutoPilotPreferencesDialog dialog = new AutoPilotPreferencesDialog(UploadFileAction.this);
+				dialog.setVisible(true);
+				if(dialog.startAutopilot()) {
+					pcs.firePropertyChange(START_AUTOPILOT_PROPERTY, null, dialog.getPreferences());
+				}
+			}
+		});
+
+		JLabel spacer2 = new JLabel();
+		spacer2.setOpaque(false);
+		GridBagConstraints gbc_spacer2 = new GridBagConstraints();
+		gbc_spacer2.gridx = 4;
+		gbc_spacer2.gridy = 2;
+		gbc_spacer2.fill = GridBagConstraints.BOTH;
+		add(spacer2, gbc_spacer2);
+
 		sanitizationOptionsPanel.setVisible(false);
+		autoPilotButton.setVisible(false);
 	}
-	
+
 	/**
 	 * Attempts to load the selected dataset, with set preferences
 	 */
 	private void attemptDatasetLoad() {
-		try {
-			setDataset(DatasetLoader.loadAndCleanDataset(selectedFile.getAbsolutePath(), deleteMissingValues, ignoreDuplicateInstances));
-		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Problems in loading dataset", "Loading failed", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
-		}
+		pcs.firePropertyChange(LOADING_DATASET_OR_EXPERIMENT_PROPERTY, null, null);
+
+		new Thread() {
+			public void run() {
+				try {
+					setDataset(DatasetLoader.loadAndCleanDataset(selectedFile.getAbsolutePath(), deleteMissingValues, ignoreDuplicateInstances));
+				} catch (Exception e) {
+
+				}
+			}
+		}.start();
+
 	}
-	
+
 	/**
 	 * Returns the preferences file for the last experiment that successfully completed
 	 * @return The preferences file
@@ -261,7 +325,7 @@ public class UploadFileAction extends Action {
 	public File getPreferencesFile() {
 		return preferencesFile;
 	}
-	
+
 	/**
 	 * Returns the loaded experiment's result file, if any
 	 * @return a {@link File} object pointing to the result file of the loaded experiment, or <code>null</code> otherwise 
@@ -306,12 +370,12 @@ public class UploadFileAction extends Action {
 		if(selectedFile != null)
 			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source Loaded</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getName() + "</font></center></html>");
 	}
-	
+
 	@Override
 	public void setInitialPreferences(Map<String, String> preferences) {
 		// Do nothing
 	}
-	
+
 	/**
 	 * Attempts to set a new dataset file; if successful, proceeds to set the new value of the dataset
 	 * @param selectedDatasetFile The selected dataset file
@@ -321,6 +385,7 @@ public class UploadFileAction extends Action {
 			this.selectedFile = selectedDatasetFile;
 			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Selected source</font></b><br/><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
 			sanitizationOptionsPanel.setVisible(true);
+			autoPilotButton.setVisible(true);
 			attemptDatasetLoad();
 		}
 		else if(selectedDatasetFile == null)
@@ -392,5 +457,5 @@ public class UploadFileAction extends Action {
 				JOptionPane.showMessageDialog(null, "Please provide a valid experiment file", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
+
 }

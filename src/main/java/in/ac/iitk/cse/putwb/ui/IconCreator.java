@@ -59,6 +59,11 @@ public abstract class IconCreator {
 	public static final String FORWARD_ICON_FILE = "Forward.png";
 	
 	/**
+	 * Icon File for Autopilot Button
+	 */
+	public static final String PLANE_ICON_FILE = "Plane.png";
+	
+	/**
 	 * Icon File for Privacy Status Button
 	 */
 	public static final String PRIVACY_ICON_FILE = "Privacy.png";
@@ -74,12 +79,12 @@ public abstract class IconCreator {
 	public static final String RUN_ICON_FILE = "Run.png";
 	
 	/**
-	 * Icon File for Uploat Dataset Diagram
+	 * Icon File for Upload Dataset Diagram
 	 */
 	public static final String UPLOAD_DATASET_ICON_FILE = "UploadDataset.png";
 	
 	/**
-	 * Icon File for Uploat Experiment Diagram
+	 * Icon File for Upload Experiment Diagram
 	 */
 	public static final String UPLOAD_EXPERIMENT_ICON_FILE = "UploadExperiment.png";
 	
@@ -104,7 +109,7 @@ public abstract class IconCreator {
 		ClassLoader loader = IconCreator.class.getClassLoader();
 		try {
 			BufferedImage icon = ImageIO.read(loader.getResourceAsStream(pathToImageFile));
-			return new ImageIcon(icon);
+			return new ImageIcon(icon, altText);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Cannot find the specified icon file: " + pathToImageFile);
 		}
