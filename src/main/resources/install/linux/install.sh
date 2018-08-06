@@ -15,7 +15,7 @@ if [ "$JAVA_VER" -ge 18 ]; then
 	done
 	
 	echo "This script creates some aliases to make your life easier. I'll use the $HOME/.bashrc file for the same."
-	echo "Shall I ho ahead? Type 'Y' to continue:"
+	echo "Shall I go ahead? Type 'Y' to continue:"
 	read choice
 	
 	if [ "$choice" == "Y" ] || [ "$choice" == "y" ]
