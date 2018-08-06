@@ -273,7 +273,6 @@ public class PUTWb implements PropertyChangeListener {
 	 */
 	private void hideWaitingDialog() {
 		waitDialog.close();
-		waitDialog.dispose();
 		paintOverlay = false;
 		frame.repaint();
 	}
@@ -366,6 +365,7 @@ public class PUTWb implements PropertyChangeListener {
 		frame.getRootPane().getActionMap().put("interruptAutopilot", interruptAutopilotAction);
 
 		currentTab = LOAD_TAB;
+		waitDialog = new WaitDialog(frame);
 	}
 
 	/**
@@ -763,7 +763,6 @@ public class PUTWb implements PropertyChangeListener {
 	private void showWaitingDialog() {
 		paintOverlay = true;
 		frame.repaint();
-		waitDialog = new WaitDialog(frame);
 		waitDialog.open();
 	}
 

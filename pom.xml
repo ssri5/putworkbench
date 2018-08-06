@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>in.ac.iitk.cse</groupId>
   <artifactId>putwb</artifactId>
-  <version>1.6</version>
+  <version>1.61</version>
   <name>PUTWorkbench</name>
   <description>A Privacy Utility Trade-off Analysis Tool</description>
   <properties>
@@ -143,7 +143,8 @@
 								<zipfileset dir="${project.build.directory}" includes="putwb-${project.version}-complete.jar" prefix="PUTWorkbench/"/>
 							</zip>
 							<zip destfile="${project.build.directory}/putwb-${project.version}-linux.zip">
-								<zipfileset dir="${project.build.directory}/linux" prefix="PUTWorkbench/"/>
+								<zipfileset dir="${project.build.directory}/linux" prefix="PUTWorkbench/" excludes="install.sh"/>
+								<zipfileset filemode="755" dir="${project.build.directory}/linux" prefix="PUTWorkbench/" includes="install.sh"/>
 								<zipfileset dir="${project.build.directory}" includes="putwb-${project.version}-complete.jar" prefix="PUTWorkbench/"/>
 							</zip>
 						</target>

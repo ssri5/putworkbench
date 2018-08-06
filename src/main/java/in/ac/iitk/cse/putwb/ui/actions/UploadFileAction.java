@@ -70,16 +70,21 @@ public class UploadFileAction extends Action {
 	 * Holds the selected dataset
 	 */
 	private Instances dataset;
-
+	
 	/**
 	 * Holds the preference - whether to delete instance with missing values or not
 	 */
 	private boolean deleteMissingValues = false;
-
+	
 	/**
 	 * The widget to take duplicate rows preferences
 	 */
 	private JCheckBox duplicateInstancesPreference;
+
+	/**
+	 * A map to store the details of a reloaded experiment
+	 */
+	private Map<String, String> experimentDetails;
 
 	/**
 	 * A label to show the full file path of currently selected dataset
@@ -90,6 +95,11 @@ public class UploadFileAction extends Action {
 	 * Holds the preference - whether to ignore duplicate instances or not
 	 */
 	private boolean ignoreDuplicateInstances = true;
+
+	/**
+	 * A flag to signify that an experiment is being reloaded
+	 */
+	private boolean loadingExperiment;
 
 	/**
 	 * The widget to take missing value preferences
@@ -124,6 +134,8 @@ public class UploadFileAction extends Action {
 		selectedFile = null;
 		resultsFile = null;
 		dataset = null;
+		loadingExperiment = false;
+		experimentDetails = new HashMap<String, String>();
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 1.0};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.5, 0.5, 0};
@@ -180,8 +192,10 @@ public class UploadFileAction extends Action {
 				jf.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				jf.setFileFilter(new FileNameExtensionFilter("PUT files", "put"));
 				int closeOption = jf.showOpenDialog(null);
-				if(closeOption == JFileChooser.APPROVE_OPTION)
+				if(closeOption == JFileChooser.APPROVE_OPTION) {
+					loadingExperiment = true;
 					setSelectedExperimentFile(jf.getSelectedFile());
+				}
 			}
 		});
 		uploadExperimentIconLabel.setToolTipText("Select a saved experiment file and load it to analyze");
@@ -310,6 +324,10 @@ public class UploadFileAction extends Action {
 			public void run() {
 				try {
 					setDataset(DatasetLoader.loadAndCleanDataset(selectedFile.getAbsolutePath(), deleteMissingValues, ignoreDuplicateInstances));
+					if(loadingExperiment) {
+						pcs.firePropertyChange(LOADED_EXPERIMENT_PROPERTY, null, experimentDetails);
+						loadingExperiment = false;
+					}
 				} catch (Exception e) {
 
 				}
@@ -424,7 +442,6 @@ public class UploadFileAction extends Action {
 						return;
 					}
 					setSelectedDatasetFile(dataFile);
-					Map<String, String> map = new HashMap<String, String>();
 					try {
 						Scanner sc = new Scanner(prefFile);
 						String line = null;
@@ -432,23 +449,22 @@ public class UploadFileAction extends Action {
 							line = sc.nextLine();
 							String[] tokens = line.trim().split(" ", 2);
 							if(tokens.length == 2)
-								map.put(tokens[0], tokens[1]);
+								experimentDetails.put(tokens[0], tokens[1]);
 						}
 						sc.close();
 						this.resultsFile = csvFile;
 						this.preferencesFile = prefFile;
-						String missingValPref = map.get(PUTExperiment.MISSING_VALUE_SWITCH);
+						String missingValPref = experimentDetails.get(PUTExperiment.MISSING_VALUE_SWITCH);
 						if(missingValPref != null) {
 							deleteMissingValues = missingValPref.trim().equals("D") ? true : false;
 							missingValuePreference.setSelected(deleteMissingValues);
 						}
-						String duplicateValPref = map.get(PUTExperiment.DUPLICATE_ROWS_SWITCH);
+						String duplicateValPref = experimentDetails.get(PUTExperiment.DUPLICATE_ROWS_SWITCH);
 						if(duplicateValPref != null) {
 							ignoreDuplicateInstances = duplicateValPref.trim().equals("Y") ? true : false;
 							duplicateInstancesPreference.setSelected(ignoreDuplicateInstances);
 						}
 						attemptDatasetLoad();
-						pcs.firePropertyChange(LOADED_EXPERIMENT_PROPERTY, null, map);
 					} catch (FileNotFoundException e) {
 						JOptionPane.showMessageDialog(null, "Problem in reading experiment data. Unable to load experiment.", "Error", JOptionPane.ERROR_MESSAGE);
 					}
