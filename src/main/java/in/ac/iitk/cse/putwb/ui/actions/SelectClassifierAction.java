@@ -195,7 +195,7 @@ public class SelectClassifierAction extends Action implements ActionListener {
 				String fullName = classifierClass.getCanonicalName();
 				fullName = "/doc.dev/" + fullName.replaceAll("\\.", "/").concat(".html");
 				classifierDescription.setText("<html><font size='4' color='#2d0c08'>Attempting to load documentation</font></html>");
-				URL docURL = new URL("http", "weka.sourceforge.net", fullName);
+				URL docURL = new URL("https", "weka.sourceforge.io", fullName);
 
 				Thread loadThread = new Thread() {
 					public void run() {

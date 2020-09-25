@@ -19,8 +19,11 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 * The repository is in the form of a Maven project. You can download the source code and build it using the Maven CLI. Use __mvn clean install__ command from the base directory for the same.
 * The build will produce a jar file called __putwb-${project.version}-complete.jar__ (as well as some other files for platform dependent installations).
 * The main classes of interest are __PUTExperiment__ (The CLI tool), __PUTWb__ (The UI tool), __RecoveryManager__ (An auxiliary tool for Recovery Management) and __Verifier__ (An auxiliary tool for results verification).  
-* If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through this nerdy stackoverflow question for a little more details:  
-  https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git  
+* If you are an Eclipse Developer (which is what we like ourselves to be called as !!), you can use the Egit and M2Eclipse plugins to make it easy for you to import the code. Go through [this](https://stackoverflow.com/questions/4869815/importing-a-maven-project-into-eclipse-from-git) nerdy stackoverflow question for a little more details.
+
+### Other Resources
+* There is a [Quick Look](https://www.youtube.com/watch?v=xcPq8Y0ZeeM) video which can help you get started.
+* The [Downloads](https://bitbucket.org/ssri5/putworkbench-maven/downloads/) Section has a brief User Manual that provides details of various features.
 
 ### Who do I talk to? ###
 
