@@ -30,7 +30,7 @@ public class AutopilotButton extends JPanel {
 		setOpaque(false);
 		setCursor(new Cursor(Cursor.HAND_CURSOR));
 		setToolTipText("Select common settings and run the experiment");
-		JLabel text = new JLabel("<html><font size='3' color='#033e9e'>Switch on<br/> Autopilot</font></html>");
+		JLabel text = new JLabel("<html><font size='3' color='#033e9e'>Switch on<br> Autopilot</font></html>");
 		text.setOpaque(false);
 		text.setHorizontalAlignment(SwingConstants.LEFT);
 		text.setVerticalAlignment(SwingConstants.CENTER);

@@ -94,7 +94,7 @@ public class SelectPrivacySettingsAction extends Action {
 		gbl_putNumberContainer.rowWeights = new double[]{0.0, 1.0};
 		putNumberContainer.setLayout(gbl_putNumberContainer);
 		
-		JLabel choosePUTLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Choose Privacy-Utility Tradeoff number</font><br/><font size='3' color='#033e9e'><b>-1</b> implies maximum Privacy whereas <b>1</b> implies maximum Utility</font></center></html>");
+		JLabel choosePUTLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Choose Privacy-Utility Tradeoff number</font><br><font size='3' color='#033e9e'><b>-1</b> implies maximum Privacy whereas <b>1</b> implies maximum Utility</font></center></html>");
 		choosePUTLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_choosePUTLabel = new GridBagConstraints();
 		gbc_choosePUTLabel.anchor = GridBagConstraints.NORTH;
@@ -147,7 +147,7 @@ public class SelectPrivacySettingsAction extends Action {
 		gbl_exceptionsContainer.rowWeights = new double[]{0.0, 1.0};
 		exceptionsContainer.setLayout(gbl_exceptionsContainer);
 		
-		JLabel choosePrivacyExceptionLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Select Privacy Exceptions</font><br/><font size='3' color='#033e9e'>Any combinations containing these attributes are ignored</font></center></html>");
+		JLabel choosePrivacyExceptionLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Select Privacy Exceptions</font><br><font size='3' color='#033e9e'>Any combinations containing these attributes are ignored</font></center></html>");
 		choosePrivacyExceptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_choosePrivacyExceptionLabel = new GridBagConstraints();
 		gbc_choosePrivacyExceptionLabel.insets = new Insets(5, 0, 5, 0);
@@ -165,7 +165,7 @@ public class SelectPrivacySettingsAction extends Action {
 		gbc_verticalSeparator.gridheight = 2;
 		exceptionsContainer.add(verticalSeparator, gbc_verticalSeparator);		
 		
-		JLabel chooseUtilityExceptionsLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Select Utility Exceptions</font><br/><font size='3' color='#033e9e'>Any combinations containing these attributes are explored</font></center></html>");
+		JLabel chooseUtilityExceptionsLabel = new JLabel("<html><center><font size='4' color='#033e9e'>Select Utility Exceptions</font><br><font size='3' color='#033e9e'>Any combinations containing these attributes are explored</font></center></html>");
 		chooseUtilityExceptionsLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_chooseUtilityExceptionsLabel = new GridBagConstraints();
 		gbc_chooseUtilityExceptionsLabel.anchor = GridBagConstraints.NORTH;

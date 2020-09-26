@@ -53,7 +53,7 @@ public class RandomCombinationGenerator implements Runnable {
 	 * Generates a fixed number of random combinations for given values of n and k, honouring a given set of privacy exceptions.
 	 * @param n The value of <i>n</i> in <i>C(n, k)</i>
 	 * @param k The value of <i>k</i> in <i>C(n, k)</i>
-	 * @param noOfCombinationsToGenerate The number of combinations to generate
+	 * @param numberOfCombinationsToGenerate The number of combinations to generate
 	 * @param ignoreTogether A {@link Set} of privacy exceptions
 	 * @return A {@link Set} of random combinations according to requested parameters
 	 * @throws Exception If something goes wrong while generating the combinations
@@ -68,7 +68,7 @@ public class RandomCombinationGenerator implements Runnable {
 	 * This is useful for cases where an experiment is being resumed after interruption. 
 	 * @param n The value of <i>n</i> in <i>C(n, k)</i>
 	 * @param k The value of <i>k</i> in <i>C(n, k)</i>
-	 * @param noOfCombinationsToGenerate The number of combinations to generate
+	 * @param numberOfCombinationsToGenerate The number of combinations to generate
 	 * @param ignoreTogether A {@link Set} of privacy exceptions
 	 * @param alreadyGenerated A {@link Set} of already generated combinations
 	 * @return A {@link Set} of random combinations according to requested parameters

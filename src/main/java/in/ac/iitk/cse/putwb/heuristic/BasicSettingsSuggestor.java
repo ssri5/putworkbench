@@ -14,7 +14,7 @@ import weka.core.Instances;
 /**
  * Provides suggestions for basic settings (partition size, vertical expense and horizontal expense) for a given dataset,
  * using an approach - "Prefer Privacy" or "Prefer Utility" 
- * and waiting time - "Quick", "Normal" or "Thorough". <br/>
+ * and waiting time - "Quick", "Normal" or "Thorough". <br>
  * By default, the approach is "Prefer Privacy". By default, the waiting time is "Normal".
  * @author Saurabh Srivastava
  *

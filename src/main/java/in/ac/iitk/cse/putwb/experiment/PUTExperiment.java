@@ -43,7 +43,7 @@ import weka.core.UnassignedClassException;
 
 /**
  * This class represents a particular Privacy-Utility tradeoff experiment. It involves providing a dataset, setting a number of parameters,
- * running the learning tasks, collecting stats and saving them in an output file.<br/>
+ * running the learning tasks, collecting stats and saving them in an output file.<br>
  * The usage details can be known by running the class, without any parameters.
  * @author Saurabh Srivastava
  *
@@ -95,8 +95,8 @@ public class PUTExperiment {
 	public static final String DATA_FILE_SWITCH = "-f";
 
 	/**
-	 * Maximum number of datasets that can wait in the queue.<br/>
-	 * This is important as the memory available may no longer be enough to hold too many datasets simultaneously.<br/>
+	 * Maximum number of datasets that can wait in the queue.<br>
+	 * This is important as the memory available may no longer be enough to hold too many datasets simultaneously.<br>
 	 * If the memory available to the JVM is significantly restricted, reduce this number.
 	 */
 	private static final int DATASET_READY_QUEUE_SIZE = 100;
@@ -127,8 +127,8 @@ public class PUTExperiment {
 	public static final String K_CROSS_SWITCH = "-k";
 
 	/**
-	 * Maximum number of learning requests that can wait in the queue.<br/>
-	 * This is important as the memory available may no longer be enough to hold too many learning requests simultaneously.<br/>
+	 * Maximum number of learning requests that can wait in the queue.<br>
+	 * This is important as the memory available may no longer be enough to hold too many learning requests simultaneously.<br>
 	 * If the memory available to the JVM is significantly restricted, reduce this number.
 	 */
 	private static final int LEARNING_REQUEST_QUEUE_SIZE = 100;
@@ -504,7 +504,7 @@ public class PUTExperiment {
 	protected String[] classifierOptions;
 
 	/**
-	 * The classifier type to use for this experiment.<br/> 
+	 * The classifier type to use for this experiment.<br> 
 	 * The allowed types could be one of the pre-defined constants.
 	 */
 	protected Class<? extends AbstractClassifier> classifierType;
@@ -659,7 +659,7 @@ public class PUTExperiment {
 	protected float vExpense;
 
 	/**
-	 * Added for any classes extending this class, within the same package.<br/>
+	 * Added for any classes extending this class, within the same package.<br>
 	 * WARNING: Using this constructor creates the experiment in an inconsistent state. 
 	 * The calling class needs to make sure that methods are called in a way that doesn't produce errors.
 	 */
@@ -677,7 +677,7 @@ public class PUTExperiment {
 	 * @param vExpense The vertical expense to use for the experiment
 	 * @param hExpense The horizontal to use for the experiment
 	 * @param classifierName The classifier type to use for the experiment
-	 * @param k The value of <i>k</k> for k-cross validation
+	 * @param k The value of <i>k</i> for k-cross validation
 	 * @param deleteMissing Indicates whether to delete instances with missing values, or fill values
 	 * @param removeDuplicates Indicates whether to remove duplicate instances or pass them to the classifier
 	 * @param logger A logger for this experiment
@@ -719,7 +719,7 @@ public class PUTExperiment {
 	 * @param vExpense The vertical expense to use for the experiment
 	 * @param hExpense The horizontal to use for the experiment
 	 * @param classifierName The classifier type to use for the experiment
-	 * @param k The value of <i>k</k> for k-cross validation
+	 * @param k The value of <i>k</i> for k-cross validation
 	 * @param deleteMissing Indicates whether to delete instances with missing values, or fill values
 	 * @param removeDuplicates Indicates whether to remove duplicate instances or pass them to the classifier
 	 * @param logger A logger for this experiment
@@ -785,7 +785,7 @@ public class PUTExperiment {
 	}
 
 	/**
-	 * Add a utility exception for this experiment<br/>
+	 * Add a utility exception for this experiment<br>
 	 * NOTE: In case of any conflicts between privacy and utility exceptions, privacy exceptions take precedence
 	 * @param exception A {@link Set} of attribute indices from the original dataset
 	 */
@@ -796,7 +796,7 @@ public class PUTExperiment {
 
 	/**
 	 * Add a utility exception for this experiment from a string representation in the form [attribute1,attribute2...],
-	 * where each attribute is an attribute index from the original dataset<br/>
+	 * where each attribute is an attribute index from the original dataset<br>
 	 * NOTE: In case of any conflicts between privacy and utility exceptions, privacy exceptions take precedence
 	 * @param exceptionStr The exception string to parse
 	 */
@@ -1050,7 +1050,7 @@ public class PUTExperiment {
 	}
 
 	/**
-	 * Returns the result file to use for this experiment<br/>
+	 * Returns the result file to use for this experiment<br>
 	 * By default, it is a file called "results.csv" in the same folder as the data file.
 	 * @return the result file 
 	 */
@@ -1138,7 +1138,7 @@ public class PUTExperiment {
 	}
 
 	/**
-	 * Parses the set of utility exceptions, in the format {exception1,exception2...}<br/>
+	 * Parses the set of utility exceptions, in the format {exception1,exception2...}<br>
 	 * NOTE: In case of any conflicts between privacy and utility exceptions, privacy exceptions take precedence
 	 * @param exceptionsStr The exception string to parse
 	 */
@@ -1228,7 +1228,7 @@ public class PUTExperiment {
 	/**
 	 * Resumes the current experiment from the partition generation stage.
 	 * If the partitions were generated via random generation method, any partitions that were recovered can be reused.
-	 * @param numberOfCombinationsToGenerate
+	 * @param numberOfCombinationsToGenerate The total number of partitions that are supposed to be generated
 	 * @param recoveredPartitions The set of partitions recovered from the recovery file
 	 * @param isRandomlyGenerated If <code>true</code>, signifies that the partitions were generated in random order, 
 	 * <code>false</code> signifies that the partitions were generated in dictionary order 
@@ -1284,8 +1284,8 @@ public class PUTExperiment {
 	}
 	
 	/**
-	 * Runs a set of compatibility tests to check current experiment configurations.<br/>
-	 * This method can be used to perform any checks over the dataset and parameters, before starting the experiment.<br/>
+	 * Runs a set of compatibility tests to check current experiment configurations.<br>
+	 * This method can be used to perform any checks over the dataset and parameters, before starting the experiment.<br>
 	 * The method is <b>not</b> invoked implicitly, and must be called explicitly before starting the experiment.
 	 * Currently the following tests are performed in the method:
 	 * <ol>
@@ -1387,10 +1387,10 @@ public class PUTExperiment {
 	}
 
 	/**
-	 * Starts the experiment with the set parameters.<br/>
-	 * All important activities are logged by a logger (by default, to standard output and error streams).<br/>
+	 * Starts the experiment with the set parameters.<br>
+	 * All important activities are logged by a logger (by default, to standard output and error streams).<br>
 	 * On successful completion, the results of the learning tasks are stored in decreasing order of the accuracies in the result file
-	 * (by default, a file called "results.csv" in the same folder as the data file).<br/>
+	 * (by default, a file called "results.csv" in the same folder as the data file).<br>
 	 * If any progress monitoring is to be done externally, preferably call this method in a new thread.
 	 */
 	private void startExperiment() {

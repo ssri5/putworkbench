@@ -190,7 +190,7 @@ public class RunAction extends Action implements ActionListener {
 		gbl_datasetSection.rowWeights = new double[]{0.0};
 		datasetSection.setLayout(gbl_datasetSection);
 		
-		JLabel infoLabel1 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Dataset File</font><br/></center></html>");
+		JLabel infoLabel1 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Dataset File</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel1 = new GridBagConstraints();
 		gbc_infoLabel1.anchor = GridBagConstraints.WEST;
 		gbc_infoLabel1.fill = GridBagConstraints.BOTH;
@@ -236,7 +236,7 @@ public class RunAction extends Action implements ActionListener {
 		gbl_privacySection.rowWeights = new double[]{1.0, 1.0, 1.0};
 		privacySection.setLayout(gbl_privacySection);
 		
-		JLabel infoLabel2 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>PUT Number</font><br/></center></html>");
+		JLabel infoLabel2 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>PUT Number</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel2 = new GridBagConstraints();
 		gbc_infoLabel2.insets = new Insets(5, 50, 5, 5);
 		gbc_infoLabel2.fill = GridBagConstraints.BOTH;
@@ -254,7 +254,7 @@ public class RunAction extends Action implements ActionListener {
 		gbc_putLabel.gridy = 0;
 		privacySection.add(putLabel, gbc_putLabel);
 		
-		JLabel infoLabel3 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Privacy Exceptions</font><br/></center></html>");
+		JLabel infoLabel3 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Privacy Exceptions</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel3 = new GridBagConstraints();
 		gbc_infoLabel3.fill = GridBagConstraints.BOTH;
 		gbc_infoLabel3.anchor = GridBagConstraints.WEST;
@@ -272,7 +272,7 @@ public class RunAction extends Action implements ActionListener {
 		gbc_privacyExceptionsLabel.gridy = 1;
 		privacySection.add(privacyExceptionsLabel, gbc_privacyExceptionsLabel);
 		
-		JLabel infoLabel4 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Security Exceptions</font><br/></center></html>");
+		JLabel infoLabel4 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Security Exceptions</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel4 = new GridBagConstraints();
 		gbc_infoLabel4.fill = GridBagConstraints.BOTH;
 		gbc_infoLabel4.anchor = GridBagConstraints.WEST;
@@ -318,7 +318,7 @@ public class RunAction extends Action implements ActionListener {
 		gbl_expensePanel.rowWeights = new double[]{0.0, 0.0};
 		expensePanel.setLayout(gbl_expensePanel);
 		
-		JLabel infoLabel5 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Horizontal Expense</font><br/></center></html>");
+		JLabel infoLabel5 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Horizontal Expense</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel5 = new GridBagConstraints();
 		gbc_infoLabel5.insets = new Insets(5, 50, 5, 70);
 		gbc_infoLabel5.fill = GridBagConstraints.BOTH;
@@ -336,7 +336,7 @@ public class RunAction extends Action implements ActionListener {
 		gbc_horizontalExpenseLabel.gridy = 0;
 		expensePanel.add(horizontalExpenseLabel, gbc_horizontalExpenseLabel);
 		
-		JLabel infoLabel6 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Vertical Expense</font><br/></center></html>");
+		JLabel infoLabel6 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Vertical Expense</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel6 = new GridBagConstraints();
 		gbc_infoLabel6.fill = GridBagConstraints.BOTH;
 		gbc_infoLabel6.anchor = GridBagConstraints.WEST;
@@ -382,7 +382,7 @@ public class RunAction extends Action implements ActionListener {
 		gbl_classifierSection.rowWeights = new double[]{1.0, 0.0};
 		classifierSection.setLayout(gbl_classifierSection);
 		
-		JLabel infoLabel7 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Classification Mechanism</font><br/></center></html>");
+		JLabel infoLabel7 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Classification Mechanism</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel7 = new GridBagConstraints();
 		gbc_infoLabel7.insets = new Insets(5, 50, 5, 25);
 		gbc_infoLabel7.fill = GridBagConstraints.BOTH;
@@ -400,7 +400,7 @@ public class RunAction extends Action implements ActionListener {
 		gbc_classifierLabel.gridy = 0;
 		classifierSection.add(classifierLabel, gbc_classifierLabel);
 		
-		JLabel infoLabel8 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Classifier Options</font><br/></center></html>");
+		JLabel infoLabel8 = new JLabel("<html><center><b><font size='4' color='#2d0c08'>Classifier Options</font><br></center></html>");
 		GridBagConstraints gbc_infoLabel8 = new GridBagConstraints();
 		gbc_infoLabel8.fill = GridBagConstraints.BOTH;
 		gbc_infoLabel8.anchor = GridBagConstraints.WEST;

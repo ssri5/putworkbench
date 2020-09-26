@@ -386,7 +386,7 @@ public class UploadFileAction extends Action {
 		if(dataset == null)
 			JOptionPane.showMessageDialog(null, "Problems in loading dataset", "Loading failed", JOptionPane.ERROR_MESSAGE);
 		if(selectedFile != null)
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source Loaded</font></b><br/><font size='3' color='#9e1503'>" + selectedFile.getName() + "</font></center></html>");
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source Loaded</font></b><br><font size='3' color='#9e1503'>" + selectedFile.getName() + "</font></center></html>");
 	}
 
 	@Override
@@ -401,7 +401,7 @@ public class UploadFileAction extends Action {
 	private void setSelectedDatasetFile(File selectedDatasetFile) {
 		if(selectedDatasetFile != null && selectedDatasetFile.exists()) {
 			this.selectedFile = selectedDatasetFile;
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Selected source</font></b><br/><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Selected source</font></b><br><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
 			sanitizationOptionsPanel.setVisible(true);
 			autoPilotButton.setVisible(true);
 			attemptDatasetLoad();
@@ -409,7 +409,7 @@ public class UploadFileAction extends Action {
 		else if(selectedDatasetFile == null)
 			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Select a Data source</font></b></center></html>");
 		else
-			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source file not found</font></b><br/><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
+			fileLabel.setText("<html><center><b><font size='4' color='#2d0c08'>Source file not found</font></b><br><font size='3' color='#9e1503'>" + selectedDatasetFile.getAbsolutePath() + "</font></center></html>");
 	}
 
 	/**

@@ -78,7 +78,7 @@ public class PartitionPlan {
 	}
 
 	/**
-	 * Adds a utility exception for a set of attributes. All attributes must be in the range [0, number of attributes)<br/>
+	 * Adds a utility exception for a set of attributes. All attributes must be in the range [0, number of attributes)<br>
 	 * NOTE: If a utility exception conflicts with a privacy exception, the privacy exception takes precedence
 	 * @param attributes A list of attributes
 	 * @throws IllegalArgumentException if any of the attributes are not in range or the number of attributes are more than the partition size
@@ -148,7 +148,7 @@ public class PartitionPlan {
 	}
 	
 	/**
-	 * Returns the utility exceptions set for this partition plan<br/>
+	 * Returns the utility exceptions set for this partition plan<br>
 	 * NOTE: If any utility exceptions conflict with privacy exceptions, the privacy exceptions take precedence
 	 * @return the exception map
 	 */
@@ -208,7 +208,7 @@ public class PartitionPlan {
 
 	/**
 	 * Sets the set of privacy exceptions to honour
-	 * @param The set of privacy exceptions
+	 * @param privacyExceptions The set of privacy exceptions
 	 */
 	public void setPrivacyExceptions(Set<Set<Integer>> privacyExceptions) {
 		this.privacyExceptions = privacyExceptions;
@@ -216,7 +216,7 @@ public class PartitionPlan {
 
 	/**
 	 * Sets the set of utility exceptions to honour
-	 * @param The set of utility exceptions
+	 * @param utilityExceptions The set of utility exceptions
 	 */
 	public void setUtilityExceptions(Set<Set<Integer>> utilityExceptions) {
 		this.utilityExceptions = utilityExceptions;

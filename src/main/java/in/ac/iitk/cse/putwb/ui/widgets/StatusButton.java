@@ -89,7 +89,7 @@ public class StatusButton extends JPanel {
 	public StatusButton(String displayText, ImageIcon iconPicture, boolean disabled, boolean selected) {
 	
 		super();
-		displayText = displayText.replaceAll("\n", "<br/>");
+		displayText = displayText.replaceAll("\n", "<br>");
 		JLabel text = new JLabel("<html><font size='3'>" + displayText + "</font></html>");
 		text.setOpaque(false);
 		text.setHorizontalAlignment(SwingConstants.LEFT);

@@ -93,7 +93,7 @@ public class BasicLogger {
 	}
 	
 	/**
-	 * Outputs error text to set stream (by calling <cod>toString()</code> method on the parameter)
+	 * Outputs error text to set stream (by calling <code>toString()</code> method on the parameter)
 	 * @param error The error
 	 */
 	public void error(Object error) {
@@ -101,8 +101,8 @@ public class BasicLogger {
 	}
 	
 	/**
-	 * Outputs error text to set stream (by calling <cod>toString()</code> method on the parameter), followed by a newline
-	 * @param error
+	 * Outputs error text to set stream (by calling <code>toString()</code> method on the parameter), followed by a newline
+	 * @param error The error
 	 */
 	public void errorln(Object error) {
 		stderr.println(error);
@@ -117,7 +117,7 @@ public class BasicLogger {
 	}
 	
 	/**
-	 * Outputs text to set stream (by calling <cod>toString()</code> method on the parameter)
+	 * Outputs text to set stream (by calling <code>toString()</code> method on the parameter)
 	 * @param output The output 
 	 */
 	public void out(Object output) {
@@ -125,7 +125,7 @@ public class BasicLogger {
 	}
 	
 	/**
-	 * Outputs text to set stream (by calling <cod>toString()</code> method on the parameter), followed by a newline
+	 * Outputs text to set stream (by calling <code>toString()</code> method on the parameter), followed by a newline
 	 * @param output The output
 	 */
 	public void outln(Object output) {

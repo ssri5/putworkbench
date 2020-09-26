@@ -13,8 +13,8 @@ import java.util.concurrent.Future;
 import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
 
 /**
- * This class generates the combinations of a set of integer in the dictionary order.<br/>
- * If there are multiple cores on the machine being used to run the code, it can parallelise the task to some extent, in order to save time.<br/>
+ * This class generates the combinations of a set of integer in the dictionary order.<br>
+ * If there are multiple cores on the machine being used to run the code, it can parallelise the task to some extent, in order to save time.<br>
  * The class can also automatically remove any combinations, that contain certain numbers together (this is handy while finding partitions of attributes,
  * honouring privacy exceptions). 
  * @author Saurabh Srivastava
@@ -23,7 +23,7 @@ import in.ac.iitk.cse.putwb.experiment.PUTExperiment;
 public class DictionaryCombinationsGenerator {
 
 	/**
-	 * If the expense is less than <code>1.0</code>, purges some attribute combinations to trim the overall set to budget.<br/>
+	 * If the expense is less than <code>1.0</code>, purges some attribute combinations to trim the overall set to budget.<br>
 	 * Guarantees not purge any utility exception, if the budget is big enough. Otherwise, includes only a subset of utility exceptions, 
 	 * trimmed to budget. 
 	 * @param combinations The unpruned set of attribute combinations

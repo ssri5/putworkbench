@@ -17,7 +17,7 @@ public class CSVConverter {
 	/**
 	 * Creates an ARFF file, if it doesn't already exist (in which case, it is overwritten).
 	 * The created ARFF file contains the data in the supplied input file, converted to ARFF.
-	 * @param inputFile The input file
+	 * @param inputCSVFile The input file
 	 * @param outputFile The converted data file in ARFF
 	 * @throws IOException if something goes wrong during conversion
 	 */

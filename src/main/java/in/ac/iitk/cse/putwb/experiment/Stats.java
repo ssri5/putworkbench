@@ -188,7 +188,7 @@ public class Stats implements Serializable {
 	}
 	
 	/**
-	 * Sorts a <code>List<code> of <code>Stats</code> objects, as per the given metric/field, in either ascending or descending order
+	 * Sorts a <code>List</code> of <code>Stats</code> objects, as per the given metric/field, in either ascending or descending order
 	 * @param originalList The <code>List</code> to sort
 	 * @param byCriteria The sort metric/field; should be one of defined constants in <code>Stats</code> class
 	 * @param descending If <code>true</code>, sorts the <code>List</code> in decreasing order

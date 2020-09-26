@@ -20,6 +20,7 @@ public class Partitions {
 	/**
 	 * Generate partitions containing specified number of attributes, as per the given partition plan
 	 * @param plan The partition plan to use while creating the partitions
+	 * @param logger The logger object for logging
 	 * @return A <code>Partition</code> instance, containing the attribute sets
 	 * @throws Exception if something goes wrong while generating partitions
 	 */

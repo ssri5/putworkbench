@@ -249,7 +249,7 @@ public class Verifier extends PUTExperiment {
 	 * @param hExpense The horizontal to use for the verification process
 	 * @param deleteMissing Indicates whether to delete instances with missing values, or fill values
 	 * @param removeDuplicates Indicates whether to remove duplicate instances or pass them to the classifier
-	 * @param k The value of <i>k</k> for k-cross validation
+	 * @param k The value of <i>k</i> for k-cross validation
 	 * @param logger A logger for this verification process
 	 * @throws Exception If something goes wrong while creating the verifier
 	 */
@@ -338,6 +338,7 @@ public class Verifier extends PUTExperiment {
 	
 	/**
 	 * Writes the new collected stats, along with the observed differences with the old stats to the output file
+	 * @return The number of results that could be verified successfully
 	 */
 	private int writeVerificationResultsToFile() {
 		try {

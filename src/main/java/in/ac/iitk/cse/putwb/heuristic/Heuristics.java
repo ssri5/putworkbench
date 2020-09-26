@@ -36,6 +36,7 @@ public abstract class Heuristics {
 	 * Provides a decision using a set of pre-defined rules, based on the given inputs 
 	 * @param inputs The inputs over which the rules are evaluated, in the form of key-value pairs (keys can only be Strings, values can be anything)
 	 * @return The decision provided by this heuristic
+	 * @throws Exception If something goes wrong
 	 */
 	public abstract Object getDecision(Map<String, Object> inputs) throws Exception;
 	

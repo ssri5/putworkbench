@@ -31,7 +31,6 @@ public class LearningPod implements Callable<Stats> {
 	/**
 	 * Creates a new Learning pod with given dataset and description of the attributes (from the original dataset)
 	 * @param classifier The <code>DataClassifier</code> to use
-	 * @param description A string description of the attribute indices from the original dataset
 	 */
 	public LearningPod(DataClassifier classifier) {
 		this.classifier = classifier;

@@ -341,9 +341,9 @@ public class AttributeFilterAction extends Action implements ActionListener {
 	}
 
 	/**
-	 * Compares two attributes as per the order information in the begining of the text (e.g. "1. AttributeI", "2. AttributeJ" etc.)
-	 * @param attr1
-	 * @param attr2
+	 * Compares two attributes as per the order information in the beginning of the text (e.g. "1. AttributeI", "2. AttributeJ" etc.)
+	 * @param attr1 first attribute
+	 * @param attr2 second attribute
 	 * @return <code>&lt; 0</code>, if <code>attr1</code> comes earlier in the sequence; 
 	 * <code>attr2</code> otherwise
 	 */

@@ -402,8 +402,6 @@ public class BarChartWidget extends JPanel {
 	/**
 	 * Creates a compound statistical display widget where the statistics are shown in the form of bar charts
 	 * @param statsToDisplay The {@link List} of {@link Stats} to display
-	 * @param start The lower value of the y-axis scale 
-	 * @param end The higher value of the y-axis scale
 	 * @param attributeNames The name of attributes over which the stats are collected
 	 * @param detailType The detail that this widget is plotting; defaults to "Accuracy" if no matching metric is found
 	 * @param classIndex The class that is used, if it is plotting a class specific metric; <code>-1</code> implies it is not a class specific metric

@@ -39,7 +39,7 @@ public class WaitDialog extends JDialog {
 	
 	/**
 	 * Creates a waiting dialog, centred w.r.t. a given parent component
-	 * @param parent
+	 * @param parent The parent component for the dialog
 	 */
 	public WaitDialog(Component parent) {
 		setModalityType(ModalityType.APPLICATION_MODAL);

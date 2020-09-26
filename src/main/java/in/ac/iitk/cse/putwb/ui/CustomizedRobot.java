@@ -25,7 +25,8 @@ import sun.awt.SunToolkit;
 public class CustomizedRobot extends Robot {
 
 	/**
-	 * @throws AWTException
+	 * Creates a new instance of a Robot for the autopilot
+	 * @throws AWTException If something goes wrong
 	 */
 	public CustomizedRobot() throws AWTException {
 		super();

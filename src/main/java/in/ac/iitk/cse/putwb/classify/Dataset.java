@@ -9,7 +9,7 @@ import weka.core.Attribute;
 import weka.core.Instances;
 
 /**
- * A Dataset represents a weka {@link Instances} object, along with any String descriptions.<br/>
+ * A Dataset represents a weka {@link Instances} object, along with any String descriptions.<br>
  * The string descriptions come handy, since we break up one dataset into multiple smaller datasets in course of our experiment.
  * @author Saurabh Srivastava
  *

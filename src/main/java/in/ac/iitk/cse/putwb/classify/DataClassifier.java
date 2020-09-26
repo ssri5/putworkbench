@@ -377,7 +377,7 @@ public class DataClassifier {
 	
 	/**
 	 * Sets the appropriate options for the classifier
-	 * @see {@link AbstractClassifier#setOptions(String[])}
+	 * @see AbstractClassifier#setOptions(String[])
 	 * @param options the options to set
 	 */
 	public void setOptions(String[] options) {

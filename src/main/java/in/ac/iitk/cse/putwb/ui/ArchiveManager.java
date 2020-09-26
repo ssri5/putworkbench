@@ -21,7 +21,7 @@ public abstract class ArchiveManager {
 	 * Extracts contents of a compressed(zip) file to a given (existing) directory
 	 * @param extractionDir The directory to extract
 	 * @param zipFile The compressed file
-	 * @return <code>true</cod> if the extraction succeeded, <code>false</code> otherwise
+	 * @return <code>true</code> if the extraction succeeded, <code>false</code> otherwise
 	 */
 	public static boolean extractCompressedFileToDirectory(File extractionDir, File zipFile ) {
 		try {
@@ -53,7 +53,7 @@ public abstract class ArchiveManager {
 	 * Saves a set of given files as a compressed(zip) file
 	 * @param zipFile The (existing) compressed file
 	 * @param files The list of files to add to this compressed file
-	 * @return <code>true</cod> if the extraction succeeded, <code>false</code> otherwise
+	 * @return <code>true</code> if the extraction succeeded, <code>false</code> otherwise
 	 */
 	public static boolean saveAsCompressedFile(File zipFile, File...files) {
 		return saveAsCompressedFile(zipFile, files, new String[files.length]);
@@ -64,7 +64,7 @@ public abstract class ArchiveManager {
 	 * @param zipFile The (existing) compressed file
 	 * @param files The list of files to add to this compressed file
 	 * @param entryNames The respective names of the file entries in the compressed file; a <code>null</code> value implies "use file names as entry names"
-	 * @return <code>true</cod> if the extraction succeeded, <code>false</code> otherwise
+	 * @return <code>true</code> if the extraction succeeded, <code>false</code> otherwise
 	 * @throws IllegalArgumentException if the size of <code>files</code> and <code>entryNames</code> are different
 	 */
 	public static boolean saveAsCompressedFile(File zipFile, File[] files, String[] entryNames) throws IllegalArgumentException {

@@ -138,8 +138,8 @@ public class ActionsPanel extends JPanel {
 	}
 
 	/**
-	 * Returns the Back button in this panel
-	 * @return
+	 * Returns the panel containing the current content
+	 * @return the content containing panel
 	 */
 	public JPanel getContent() {
 		return content;
@@ -179,7 +179,7 @@ public class ActionsPanel extends JPanel {
 	
 	/**
 	 * Sets the content to be shown in this panel. If there was any previous content, it is removed first, and then the new content is added.
-	 * @param newContent The <code>Action<code> to show in this panel. 
+	 * @param newContent The <code>Action</code> to show in this panel. 
 	 */
 	public void setContent(Action newContent) {
 		if(content != null)
