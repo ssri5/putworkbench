@@ -162,6 +162,11 @@
 										includes="putwb-${project.version}-complete.jar"
 										prefix="PUTWorkbench/" />
 								</zip>
+								<zip
+									destfile="${project.build.directory}/docs.zip">
+									<zipfileset
+										dir="${project.build.directory}/docs/" />
+								</zip>
 							</target>
 						</configuration>
 					</execution>
@@ -175,6 +180,7 @@
 							<target>
 								<delete dir="${project.build.directory}/windows/" />
 								<delete dir="${project.build.directory}/linux/" />
+								<delete dir="${project.build.directory}/docs/" />
 							</target>
 						</configuration>
 					</execution>
@@ -185,7 +191,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
-					<reportOutputDirectory>${project.basedir}</reportOutputDirectory>
+					<reportOutputDirectory>${project.build.directory}</reportOutputDirectory>
 					<destDir>docs</destDir>
 				</configuration>
 			</plugin>

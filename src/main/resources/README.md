@@ -23,7 +23,7 @@ This repository has the source code for the Privacy-Utility Tradeoff Workbench p
 
 ### Other Resources
 * There is a [Quick Look](https://www.youtube.com/watch?v=xcPq8Y0ZeeM) video which can help you get started.
-* The [Downloads](https://bitbucket.org/ssri5/putworkbench-maven/downloads/) Section has a brief User Manual that provides details of various features.
+* The [Downloads](https://bitbucket.org/ssri5/putworkbench-maven/downloads/) Section has a brief User Manual that provides details of various features, as well as a zip file called _docs.zip_ containing the Javadoc files for the code.
 
 ### Who do I talk to? ###
 
